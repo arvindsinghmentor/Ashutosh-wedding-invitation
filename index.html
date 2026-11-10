@@ -338,5 +338,5 @@ document.getElementById('gminus').onclick=()=>{g=Math.max(1,g-1);gn.textContent=
 nm.addEventListener('input',()=>er.hidden=true);
 f.addEventListener('submit',e=>{e.preventDefault();const n=nm.value.trim();if(!n){er.hidden=false;nm.focus();return}
 const msg=`Namaste! This is ${n}.\nRSVP for Ashutosh & Shrusti's wedding: ${att}.${att==='Joyfully accept'?`\nNumber of guests: ${g}`:''}`;
-window.open('https://wa.me/919425110992?text='+encodeURIComponent(msg),'_blank','noopener')});
+try{localStorage.setItem('as_rsvp_prefill',JSON.stringify({n,a:att==='Joyfully accept'?1:0,g,t:Date.now()}))}catch(_){}location.href='rsvp/'});
 })();</script></body></html>
