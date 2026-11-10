@@ -1,0 +1,19 @@
+# Private data: never commit (public repo)
+private/
+handoff/
+mockups/
+seed*.json
+*seed*.json
+invite_message*.txt
+*.vcf
+*.csv
+
+# Firebase local state
+.firebase/
+firebase-debug.log
+firestore-debug.log
+.runtimeconfig.json
+
+# Tools
+node_modules/
+tests/node_modules/
