@@ -114,11 +114,11 @@ $('#scrim').onclick=closeSheet;
 /* ================= HOME ================= */
 function nextEv(){const now=Date.now();let i=EVT.findIndex(e=>new Date(e[1]).getTime()>now-3*3600e3);return i<0?EVT.length-1:i}
 P.home = () => {const C=coming(),L=rlist(),need=C.filter(r=>r.rm),noRoom=need.filter(r=>!roomOf(r)).length,keys=C.filter(r=>roomOf(r)&&!r.ks).length,
- ni=nextEv(),ne=EVT[ni],dt=new Date(ne[1]),ms=dt-Date.now(),days=Math.ceil(ms/864e5),open=live(TK).filter(t=>!t.dn),vs=live(VH),
+ ni=nextEv(),ne=EVT[ni],dt=new Date(ne[1]),ms=dt-Date.now(),days=Math.floor(ms/864e5),open=live(TK).filter(t=>!t.dn),vs=live(VH),
  unsent=vs.reduce((a,v)=>a+Object.keys(v.px||{}).filter(i=>R[i]&&!R[i].del&&!v.px[i].s).length,0),ba=C.filter(r=>r.tr==BAARAT),
  drops=C.filter(r=>r.dr),wk=new Date(Date.now()+7*864e5).toISOString().slice(0,10),due=open.filter(t=>t.d&&t.d<=wk),vac=vacant(),
  hand=C.filter(r=>roomOf(r)&&!r.kg&&r.ci).length,tot=Object.keys(D).length,given=tot-vac.length;
- const when2=days>1?`IN ${days} DAYS`:days==1?'TOMORROW':ms>0?'TODAY':'NOW';
+ const when2=days>1?`IN ${days} DAYS`:days==1?'IN 1 DAY':ms>0?'TODAY':'NOW';
  const cd=ms>0?[Math.floor(ms/864e5),Math.floor(ms/36e5)%24,Math.floor(ms/6e4)%60]:[0,0,0];
  const hr=+new Date().toLocaleString('en-GB',{hour:'numeric',hour12:false,timeZone:'Asia/Kolkata'});
  const nm=(ORG[ME.email]&&ORG[ME.email].name||ME.displayName||ME.email.split('@')[0]).split(' ')[0];
@@ -133,7 +133,7 @@ P.home = () => {const C=coming(),L=rlist(),need=C.filter(r=>r.rm),noRoom=need.fi
  return `<div class="bar"><div class="mono H">A&amp;S</div><div class="bt"><b class="H">Ashutosh &amp; Shrusti</b><span>ORGANISER · 1–2 DEC · UJJAIN</span></div>${liveChip()}<button class="av" data-go="more" aria-label="Account">${esc(ini(nm))}</button></div>
  <div class="wrap"><div class="hello"><b class="H">Good ${hr<12?'morning':hr<17?'afternoon':'evening'}, ${esc(nm)}</b><span>${new Date().toLocaleDateString('en-GB',{weekday:'short',day:'numeric',month:'short',timeZone:'Asia/Kolkata'})}</span></div>
  <div class="hero"><div class="kick">NEXT UP · ${when2}</div><h2 class="H">${ne[0]}</h2>
-  <div class="meta"><div>${svg('cal')}${dt.toLocaleDateString('en-GB',{weekday:'short',day:'numeric',month:'short',timeZone:'Asia/Kolkata'})} · ${dt.toLocaleTimeString('en-IN',{hour:'numeric',minute:'2-digit',timeZone:'Asia/Kolkata'})}</div><div>${svg('pin')}${ne[2]}</div></div>
+  <div class="meta"><div>${svg('cal')}${dt.toLocaleDateString('en-GB',{weekday:'short',day:'numeric',month:'short',timeZone:'Asia/Kolkata'})} · ${dt.toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit',timeZone:'Asia/Kolkata'})}</div><div>${svg('pin')}${ne[2]}</div></div>
   <div class="cd"><div><b class="H">${cd[0]}</b><span>DAYS</span></div><div><b class="H">${cd[1]}</b><span>HRS</span></div><div><b class="H">${cd[2]}</b><span>MIN</span></div></div>
   <div class="hb"><button class="pill gold" id="h_alert">${svg('bell')}Send alert</button><a class="pill ghost" href="${ne[4]}" target="_blank" rel="noopener">${svg('map')}Map</a></div></div>
  <div class="tl">${EVT.map((e,i)=>`<div class="ev${i==ni?' now':i<ni?' past':''}"><i></i><b>${e[3]}</b>${new Date(e[1]).toLocaleDateString('en-GB',{day:'numeric',month:'short',timeZone:'Asia/Kolkata'})}</div>`).join('')}</div>
