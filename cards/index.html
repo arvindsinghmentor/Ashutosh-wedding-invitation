@@ -1,0 +1,108 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Guest card · Ashutosh weds Shrusti</title>
+<meta name="author" content="Arvind Singh">
+<meta name="robots" content="noindex">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,700;1,500&family=Mukta:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--ink:#3b1417;--mar:#7b1e2b;--gold:#b8862b;--paper:#fbf4e6;--paper2:#fff8e8;--field:#fff;--line:#e2cfa6;--mute:#7d5f50;--onmar:#fff;--bad:#b3261e;
+ color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){color-scheme:dark;--ink:#f6e7c8;--mar:#e0a0a8;--gold:#e0b04f;--paper:#1c0a0d;--paper2:#2a1115;--field:#2a1115;--line:#5a2f2a;--mute:#c0a27c;--onmar:#1c0a0d;--bad:#ff8a80}}
+:root[data-theme="dark"]{color-scheme:dark;--ink:#f6e7c8;--mar:#e0a0a8;--gold:#e0b04f;--paper:#1c0a0d;--paper2:#2a1115;--field:#2a1115;--line:#5a2f2a;--mute:#c0a27c;--onmar:#1c0a0d;--bad:#ff8a80}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*,*::before,*::after{box-sizing:border-box}
+body{margin:0;min-height:100%;background:radial-gradient(circle at 20% 0,var(--paper2),var(--paper) 60%) fixed;font:15px/1.5 Mukta,system-ui,sans-serif;color:var(--ink)}
+.wrap{max-width:480px;margin:0 auto;padding:12px 12px 110px;position:relative}
+.frame{position:relative;padding:20px 18px 22px}
+.frame::before{content:"";position:absolute;inset:0;border:1px solid var(--gold);outline:1px solid var(--line);outline-offset:-5px;pointer-events:none}
+h1,h2,h3{font-family:'Cormorant Garamond',Georgia,serif;color:var(--mar);margin:.15em 0;font-weight:700}
+.head{text-align:center;padding:6px 0 4px}
+.sh{color:var(--gold);letter-spacing:.08em;font-size:14px}
+.head h1{font-size:34px;line-height:1.1}
+.head .sub{color:var(--mute);font-size:14px}
+.rs{display:inline-block;margin-top:6px;font:700 15px 'Cormorant Garamond',serif;letter-spacing:.35em;color:var(--gold)}
+.steps{display:flex;align-items:center;justify-content:center;gap:8px;margin:14px 0 4px;color:var(--mute);font-size:13px}
+.dots{display:flex;gap:5px}.dots i{width:7px;height:7px;border-radius:50%;background:var(--line)}.dots i.on{background:var(--mar);width:18px;border-radius:4px}
+.step{display:none}.step.cur{display:block;animation:up .5s both}
+@keyframes up{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion:reduce){.step.cur{animation:none}}
+h2{font-size:28px;text-align:center}
+.lead{text-align:center;color:var(--mute);font-size:14px;margin:0 0 6px}
+.card{background:var(--field);border:1px solid var(--line);border-radius:12px;padding:6px 14px 14px;margin:12px 0;box-shadow:0 2px 8px rgba(120,80,30,.08)}
+.card>h3{font-size:21px;margin:8px 0 0}
+label,.lb{display:block;font-size:12px;font-weight:700;color:var(--mute);margin:12px 0 4px}
+input,select,textarea{width:100%;font:inherit;color:var(--ink);background:var(--field);border:1.5px solid var(--line);border-radius:10px;padding:9px 10px}
+input:focus,select:focus,textarea:focus{outline:none;border-color:var(--gold)}
+.two{display:flex;gap:10px}.two>*{flex:1;min-width:0}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.ch{border:1.5px solid var(--gold);background:var(--field);color:var(--ink);border-radius:20px;padding:7px 13px;font:600 13px Mukta,sans-serif;cursor:pointer}
+.ch.on{background:var(--mar);color:var(--onmar);border-color:var(--mar)}
+.ch:focus-visible,.nav button:focus-visible,.btn:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
+.big{display:grid;grid-template-columns:1fr 1fr;gap:8px}.big .ch{padding:12px 8px;font-size:15px;border-radius:12px}
+.err{color:var(--bad);font-weight:700;font-size:13px;margin-top:4px}
+.hide{display:none!important}
+.sum{width:100%;border-collapse:collapse}.sum td{padding:5px 6px;border-bottom:1px solid var(--line);vertical-align:top;font-size:13px}.sum td:first-child{color:var(--mute);width:36%}
+.nav{position:fixed;left:0;right:0;bottom:0;z-index:5;background:linear-gradient(transparent,var(--paper) 35%)}
+.nav>div{max-width:480px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;gap:10px;padding:16px 14px calc(12px + env(safe-area-inset-bottom,0px))}
+.nav button,.btn{background:var(--mar);color:var(--onmar);border:0;border-radius:24px;padding:11px 22px;font:700 15px Mukta,sans-serif;cursor:pointer;text-decoration:none;display:inline-block;text-align:center}
+.nav .back{background:transparent;color:var(--mar);border:1.5px solid var(--mar)}
+.nav .back[hidden]{visibility:hidden;display:inline-block}
+.nav .go{flex:1;max-width:260px}
+.btn.o{background:transparent;color:var(--mar);border:1.5px solid var(--mar)}
+.done{text-align:center}
+.done p{margin:10px 0}
+.foot{text-align:center;color:var(--mute);font-size:12px;margin-top:16px}
+/* key card */
+.key{border-radius:16px;overflow:hidden;background:var(--field);border:1px solid var(--line);box-shadow:0 14px 34px rgba(60,20,20,.25)}
+.kt{background:#7b1e2b;color:#fff;padding:16px 18px;position:relative}
+.kt .s{color:#e8c98a;font-size:13px;letter-spacing:.06em}
+.kt h3{color:#fff;font-size:26px;margin:2px 0 0}
+.chip{position:absolute;right:16px;top:18px;width:42px;height:32px;border-radius:6px;background:linear-gradient(135deg,#f0d59a,#b8862b);box-shadow:inset 0 0 0 1px #8a6420}
+.chip::before,.chip::after{content:"";position:absolute;left:8px;right:8px;top:10px;border-top:1px solid #8a6420}.chip::after{top:20px}
+.km{text-align:center;padding:18px 16px 12px;border-bottom:1px dashed var(--line)}
+.km .l{color:var(--mute);font-size:13px}
+.rno{font:700 84px/1 'Cormorant Garamond',serif;color:var(--mar);margin:2px 0}
+.km .n{font:700 24px 'Cormorant Garamond',serif;margin-top:8px}
+.kb{padding:12px 16px 16px}
+.ev{display:flex;gap:12px;align-items:center;padding:6px 0;border-bottom:1px solid var(--line)}.ev .d{min-width:52px;text-align:center;background:var(--mar);color:var(--onmar);border-radius:8px;padding:3px 0;font-weight:700;line-height:1.1}.ev .d small{display:block;font-weight:400;font-size:11px}
+.trow{display:flex;justify-content:space-between;gap:12px;padding:7px 0;border-bottom:1px solid var(--line)}.trow span{color:var(--mute);font-size:13px}.trow b{text-align:right}
+.big2{font:700 52px/1 'Cormorant Garamond',serif;color:var(--mar);margin:4px 0}
+.cr{text-align:center;color:var(--gold);font-size:11px;letter-spacing:.06em;margin:8px 0 0}
+.pf{text-align:center;color:var(--mute);font-size:12px;margin:14px 0 0}
+.intro{text-align:center;padding:30px 10px;color:var(--mute)}
+</style></head><body>
+<div class="wrap" style="padding-bottom:30px"><div class="frame" id="app"></div><p class="pf">Designed by Arvind Singh</p></div>
+<script>
+const MAP_RESORT='https://maps.app.goo.gl/6dFUHGh6tHEv27Y5A';
+const FN=[['Shri Ganesh Poojan','Sat 28 Nov','11:00 AM · Gwalior'],['Haldi','Tue 1 Dec','10:00 AM'],['Sangeet','Tue 1 Dec','7:00 PM'],['Nikasi','Wed 2 Dec','10:00 AM'],['Phere','Wed 2 Dec','12:30 PM'],['Vidaai','Wed 2 Dec','']];
+const B62='0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
+function enc(o){const b=new TextEncoder().encode(JSON.stringify(o));let n=1n;for(const x of b)n=n*256n+BigInt(x);let s='';while(n>0n){s=B62[Number(n%62n)]+s;n/=62n}return s}
+function dec(s){let n=0n;for(const c of s){const i=B62.indexOf(c);if(i<0)throw new Error('bad');n=n*62n+BigInt(i)}const a=[];while(n>1n){a.unshift(Number(n%256n));n/=256n}return JSON.parse(new TextDecoder().decode(new Uint8Array(a)))}
+
+const $=s=>document.querySelector(s);
+const esc=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const head=t=>`<div class="head"><div class="sh">॥ श्री गणेशाय नमः ॥</div><h1>Ashutosh &amp; Shrusti</h1><div class="rs">${t}</div></div>`;
+const evRow=f=>{const m=f[1].split(' ');return `<div class="ev"><div class="d">${m[1]}<small>${m[2]}</small></div><div><b>${f[0]}</b><br><span style="color:var(--mute);font-size:13px">${m[0]}${f[2]?' · '+f[2]:''}</span></div></div>`};
+const row=(l,v)=>v?`<div class="trow"><span>${l}</span><b>${v}</b></div>`:'';
+const foot=`<p style="text-align:center;color:var(--mute);font-size:13px;margin:12px 0 0">With love, the Singhal family</p><p class="cr">Designed by Arvind Singh</p>`;
+function keyCard(K){document.title='Room '+K.r+' · Key card';
+ $('#app').innerHTML=head('ROOM KEY')+`<div class="key" style="margin-top:12px"><div class="kt"><div class="s">Ashutosh weds Shrusti</div><h3>Room key card</h3><div class="chip" aria-hidden="true"></div></div>
+ <div class="km"><div class="l">Your room</div><div class="rno">${esc(K.r)}</div><div class="l">${esc(K.f)}th floor${K.ty?', '+esc(K.ty):''}</div><div class="n">${esc(K.n)}</div>${K.px?`<div class="l">${esc(K.px)}</div>`:''}</div>
+ <div class="kb">${row('Venue','Pukhraj Club &amp; Resort, Newa Kheda, Ujjain')}${row('Arrival',esc(K.ar))}${row('Departure',esc(K.dp))}
+ ${((K.fx||[]).length?K.fx:FN.map((f,i)=>i)).filter(i=>FN[i]).map(i=>evRow(FN[i])).join('')}
+ <p style="text-align:center;margin:14px 0 4px"><a class="btn o" href="${MAP_RESORT}" target="_blank" rel="noopener">Open in Maps</a></p>
+ <p style="text-align:center;color:var(--mute);font-size:13px;margin:10px 0 0">Please show this card at the reception.</p>${foot}</div></div>`}
+function travelCard(C){const bus=C.k=='bus';document.title=(bus?'Bus':'Train')+' card · '+C.n;
+ const big=bus?(C.st?`<div class="l">Your seat</div><div class="rno">${esc(C.st)}</div><div class="l">${esc(C.vn)}${C.no?' · '+esc(C.no):''}</div>`:`<div class="l">Your bus</div><div class="big2">${esc(C.vn)}</div>${C.no?`<div class="l">${esc(C.no)}</div>`:''}`)
+  :`<div class="l">Train</div><div class="big2">${esc(C.no)}</div>${C.tn?`<div class="l">${esc(C.tn)}</div>`:''}`;
+ $('#app').innerHTML=head(bus?'BUS CARD':'TRAIN CARD')+`<div class="key" style="margin-top:12px"><div class="kt"><div class="s">Ashutosh weds Shrusti</div><h3>${bus?'🚌 Bus card':'🚆 Train card'}</h3><div class="chip" aria-hidden="true"></div></div>
+ <div class="km">${big}<div class="n">${esc(C.n)}</div>${C.px?`<div class="l">${esc(C.px)}</div>`:''}</div>
+ <div class="kb">${row('Date',esc(C.d))}${bus?row('Leaves at',esc(C.tm))+row('Route',C.fr&&C.to?esc(C.fr)+' → '+esc(C.to):'')+row('Pickup point',esc(C.pp))
+  :row('Departs',[C.fr,C.tm].filter(Boolean).map(esc).join(', '))+row('Arrives',[C.to,C.ta].filter(Boolean).map(esc).join(', '))+row('PNR',esc(C.pnr))+row('Coach',esc(C.co))+row('Seat / berth',esc(C.st))}
+ ${bus&&C.dr?row('Driver',esc(C.dr)+(C.dp?`<br><a href="tel:+${esc(C.dp)}" style="color:var(--mar)">Call +${esc(C.dp)}</a>`:'')):''}
+ <p style="text-align:center;color:var(--mute);font-size:13px;margin:12px 0 0">${bus?'Please reach the pickup point 15 minutes early.':'Please carry a photo ID for your train journey.'}</p>${foot}</div></div>`}
+function route(){const h=location.hash.slice(1),m=h.match(/^(key|bus|train)-([0-9A-Za-z]+)$/);
+ if(m){try{const d=dec(m[2]);return m[1]=='key'?keyCard(d):travelCard(d)}catch(e){}}
+ $('#app').innerHTML=head('GUEST CARD')+`<div class="intro">Your room key card and travel cards open here.<br>Please use the link you received on WhatsApp.</div>`}
+addEventListener('hashchange',route);route();
+</script></body></html>
