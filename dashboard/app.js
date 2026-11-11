@@ -287,11 +287,12 @@ const KC = {}, PAY = {};
 const newCode = () => [...crypto.getRandomValues(new Uint8Array(8))].map(x => B62[x % 62]).join('');
 const cardCode = (key, saved, k, d) => { const c = saved || (KC[key] ||= newCode()); PAY[c] = { k, d }; return c; };
 const saveCard = c => { if (PAY[c]) put('c', c, { ...PAY[c] }, false); };
+// card link goes before the Maps link: WhatsApp previews the first link in a message
 function keyHref(r){const room=roomOf(r),d=D[room];
  const K={n:r.n,r:room,f:d.f,ty:rtype(room),px:paxWords(r),ar:r.ar?`${r.ar}${r.at?', around '+t12(r.at):''}`:'',dp:[r.dp,t12(r.dt)].filter(Boolean).join(', '),fx:r.fx||[]};
- const L=['🔑 *Your room key card*','Ashutosh weds Shrusti','',`Dear ${r.n}, your room is ready.`,'',`🚪 *Room ${room}*, ${d.f}th floor (${K.ty})`,'🏨 Pukhraj Club & Resort, Newa Kheda, Ujjain','📍 '+MAP_RESORT];
+ const L=['🔑 *Your room key card*','Ashutosh weds Shrusti','',`Dear ${r.n}, your room is ready.`,'','Open your key card:',CARDS_URL+'key/#'+cardCode(r.id,r.kc,'key',K),'',`🚪 *Room ${room}*, ${d.f}th floor (${K.ty})`,'🏨 Pukhraj Club & Resort, Newa Kheda, Ujjain','📍 '+MAP_RESORT];
  if(K.ar)L.push('🗓 Arrival: '+K.ar);if(K.px)L.push('👥 '+K.px);
- L.push('','Open your key card:',CARDS_URL+'key/#'+cardCode(r.id,r.kc,'key',K),'','Please show it at the reception. 🙏','Dr. Sarita Singhal & the Singhal Family');
+ L.push('','Please show your key card at the reception. 🙏','Dr. Sarita Singhal & the Singhal Family');
  return waL(r.p,L.join('\n'))}
 const gfilt = {all:r=>1,coming:r=>r.a,need:r=>r.a&&r.rm&&!roomOf(r),key:r=>roomOf(r)&&!r.ks,declined:r=>!r.a};
 function gTags(r){const t=[],rm=roomOf(r);if(!r.a)return '<span class="tag tn">Not coming</span>';
