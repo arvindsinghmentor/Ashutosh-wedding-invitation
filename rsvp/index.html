@@ -4,9 +4,16 @@
 <meta name="author" content="Arvind Singh">
 <meta name="description" content="R.S.V.P. for the wedding of Ashutosh and Shrusti · 2 December 2026 · Pukhraj Club & Resort, Ujjain">
 <meta property="og:type" content="website">
+<meta property="og:url" content="https://arvindsinghmentor.github.io/Ashutosh-wedding-invitation/rsvp/">
 <meta property="og:title" content="R.S.V.P. · Ashutosh weds Shrusti">
-<meta property="og:description" content="Please tell us about your stay and travel · takes about one minute">
-<meta property="og:image" content="https://arvindsinghmentor.github.io/Ashutosh-wedding-invitation/preview.jpg">
+<meta property="og:description" content="Please tell us about your family, stay and travel · takes about one minute">
+<meta property="og:image" content="https://arvindsinghmentor.github.io/Ashutosh-wedding-invitation/rsvp/preview.jpg">
+<meta property="og:image:secure_url" content="https://arvindsinghmentor.github.io/Ashutosh-wedding-invitation/rsvp/preview.jpg">
+<meta property="og:image:type" content="image/jpeg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="R.S.V.P. · Ashutosh weds Shrusti">
+<meta name="twitter:card" content="summary_large_image">
 <meta name="theme-color" content="#7b1e2b">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,700;1,500&family=Mukta:wght@400;600;700&display=swap" rel="stylesheet">
@@ -221,7 +228,7 @@ async function send(){if(sending||!valid())return;sending=true;const{R,rows}=pac
  const ok=await save(R);
  const msg=['🙏 *R.S.V.P. · Ashutosh weds Shrusti*','',...rows.map(r=>`*${r[0]}:* ${r[1]}`),'',
   ok?`Ref: ${R.ref}`:'👇 *For the organiser: tap to save*\n'+SITE+'dashboard/#rsvp-'+enc(R)].join('\n');
- const url='https://wa.me/'+ORG_PHONE+'?text='+encodeURIComponent(msg);
+ const url='https://api.whatsapp.com/send?phone='+ORG_PHONE+'&text='+encodeURIComponent(msg);
  S.done=Date.now();S.ref=R.ref;sv();sending=false;$('#nx').disabled=false;
  thanks(url,R,ok);if(w&&!w.closed)w.location.href=url;else location.href=url}
 function thanks(url,R,ok){$('#bar').classList.add('hide');const first=R.n.split(/\s+/)[0];

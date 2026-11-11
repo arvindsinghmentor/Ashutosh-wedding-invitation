@@ -33,6 +33,11 @@ service cloud.firestore {
       allow read, update, delete: if isOrg();
     }
 
+    // Guest cards: anyone holding the exact 8-letter code may read that one card; no listing. Organisers write (below).
+    match /c/{code} {
+      allow get: if code.size() == 8;
+    }
+
     match /{coll}/{doc=**} {
       allow read, write: if coll != 'rsvps' && isOrg();
     }

@@ -41,7 +41,8 @@ const ago = t => {if(!t)return'';const m=Math.round((Date.now()-t)/6e4);return m
 const fdate = d => d ? new Date(d+'T00:00').toLocaleDateString('en-GB',{weekday:'short',day:'numeric',month:'short'}) : '';
 const sdate = d => d ? new Date(d+'T00:00').toLocaleDateString('en-GB',{day:'numeric',month:'short'}) : '';
 const ph91 = s => {const d=String(s||'').replace(/\D/g,'');return d.length==10?'91'+d:d.length==11&&d[0]=='0'?'91'+d.slice(1):d};
-const waL = (p, t) => 'https://wa.me/' + ph91(p) + (t ? '?text=' + encodeURIComponent(t) : '');
+// api.whatsapp.com keeps emojis; wa.me turns them into '?' on Android
+const waL = (p, t) => 'https://api.whatsapp.com/send?phone=' + ph91(p) + (t ? '&text=' + encodeURIComponent(t) : '');
 const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
 const ini = n => String(n||'?').replace(/[^A-Za-zऀ-ॿ ]/g,' ').trim().split(/\s+/).slice(0,2).map(w=>w[0]).join('').toUpperCase() || '?';
 const today = () => new Date().toISOString().slice(0, 10);
@@ -281,11 +282,16 @@ let GF = 'all', GQ = '';
 function fillRoom(r,room){Object.assign(D[room],{name:r.n,pax:paxStr(r),g:grpOf(r),note:[r.rl,'+'+r.p].filter(Boolean).join(' · '),rid:r.id})}
 function assign(r,room){const old=roomOf(r);if(old){Object.assign(D[old],{name:'',pax:'',g:'',note:'',rid:''});putRoom(old)}
  if(room){fillRoom(r,room);putRoom(room)}r.room=room;putR(r)}
+/* short card links: the card's data is saved to c/{code} when Send is tapped; the link only carries the 8-letter code */
+const KC = {}, PAY = {};
+const newCode = () => [...crypto.getRandomValues(new Uint8Array(8))].map(x => B62[x % 62]).join('');
+const cardCode = (key, saved, k, d) => { const c = saved || (KC[key] ||= newCode()); PAY[c] = { k, d }; return c; };
+const saveCard = c => { if (PAY[c]) put('c', c, { ...PAY[c] }, false); };
 function keyHref(r){const room=roomOf(r),d=D[room];
  const K={n:r.n,r:room,f:d.f,ty:rtype(room),px:paxWords(r),ar:r.ar?`${r.ar}${r.at?', around '+t12(r.at):''}`:'',dp:[r.dp,t12(r.dt)].filter(Boolean).join(', '),fx:r.fx||[]};
  const L=['🔑 *Your room key card*','Ashutosh weds Shrusti','',`Dear ${r.n}, your room is ready.`,'',`🚪 *Room ${room}*, ${d.f}th floor (${K.ty})`,'🏨 Pukhraj Club & Resort, Newa Kheda, Ujjain','📍 '+MAP_RESORT];
  if(K.ar)L.push('🗓 Arrival: '+K.ar);if(K.px)L.push('👥 '+K.px);
- L.push('','Open your key card:',CARDS_URL+'#key-'+enc(K),'','Please show it at the reception. 🙏','Dr. Sarita Singhal & the Singhal Family');
+ L.push('','Open your key card:',CARDS_URL+'key/#'+cardCode(r.id,r.kc,'key',K),'','Please show it at the reception. 🙏','Dr. Sarita Singhal & the Singhal Family');
  return waL(r.p,L.join('\n'))}
 const gfilt = {all:r=>1,coming:r=>r.a,need:r=>r.a&&r.rm&&!roomOf(r),key:r=>roomOf(r)&&!r.ks,declined:r=>!r.a};
 function gTags(r){const t=[],rm=roomOf(r);if(!r.a)return '<span class="tag tn">Not coming</span>';
@@ -334,7 +340,7 @@ B.guest = id => {const r=R[id];if(!r||r.del)return;
  if(!r.a)return;
  $('#gd_room').onchange=e=>{assign(r,e.target.value);toast(e.target.value?'Room '+e.target.value+' given to '+r.n:'Room removed')};
  $('#gd_g').onchange=e=>{r.g=e.target.value;const rm=roomOf(r);if(rm){D[rm].g=r.g;putRoom(rm)}putR(r)};
- const k=$('#gd_key');if(k)k.onclick=()=>{r.ks=Date.now();putR(r)};
+ const k=$('#gd_key');if(k)k.onclick=()=>{const c=r.kc||KC[r.id];saveCard(c);r.kc=c;r.ks=Date.now();putR(r)};
  $('#gd_ci').onclick=()=>{r.ci=r.ci?0:Date.now();putR(r)};const kg=$('#gd_kg');if(kg)kg.onclick=()=>{r.kg=r.kg?0:Date.now();putR(r)}};
 
 /* paste-link import (fallback when a guest's RSVP could not be saved online) */
@@ -398,7 +404,7 @@ function tcHref(v,r){const x=v.px[r.id]||{};const C={k:v.k,n:r.n,px:paxWords(r),
  const q=(c,t)=>c?t:null;
  const L=v.k=='bus'?['🚌 *Your bus details*','Ashutosh weds Shrusti','',`Dear ${r.n},`,`*${C.vn}*${C.no?' · Bus '+C.no:''}`,q(C.d,`🗓 ${C.d}${C.tm?', leaves at '+C.tm:''}`),q(C.pp,'📍 Pickup: '+C.pp),q(C.fr&&C.to,`➡️ ${C.fr} → ${C.to}`),q(C.st,'💺 Seat: '+C.st),q(C.dr,`👤 Driver: ${C.dr}${C.dp?' (+'+C.dp+')':''}`)]
  :['🚆 *Your train details*','Ashutosh weds Shrusti','',`Dear ${r.n},`,`*${C.no}${C.tn?' '+C.tn:''}*`,q(C.d,'🗓 '+C.d),q(C.fr,`🚉 ${C.fr} ${C.tm} → ${C.to} ${C.ta}`),q(C.pnr,'🎫 PNR: '+C.pnr),q(C.co||C.st,`💺 ${C.co?'Coach '+C.co:''}${C.co&&C.st?', ':''}${C.st?'Seat '+C.st:''}`)];
- L.push('','Your travel card:',CARDS_URL+'#'+v.k+'-'+enc(C),'','🙏 Dr. Sarita Singhal & the Singhal Family');
+ L.push('','Your travel card:',CARDS_URL+v.k+'/#'+cardCode(v.id+'|'+r.id,x.kc,v.k,C),'','🙏 Dr. Sarita Singhal & the Singhal Family');
  return waL(r.p,L.filter(x=>x!==null).join('\n'))}
 P.veh = id => {const v=VH[id];if(!v||v.del)return ph('Vehicle','Not found','','travel')+'<div class="body"><div class="card empty">This vehicle was deleted.</div></div>';
  const ids=Object.keys(v.px||{}).filter(i=>R[i]&&!R[i].del),C=coming().filter(r=>!v.px[r.id]),sug=C.filter(r=>v.k=='bus'?r.tr==BAARAT:r.tr=='Train'),bus=v.k=='bus';
@@ -412,7 +418,7 @@ B.veh = id => {const v=VH[id];if(!v||v.del)return;$('#vp_e').onclick=()=>vForm({
  const add=ids2=>{v.px=v.px||{};ids2.forEach(i=>v.px[i]=v.px[i]||{st:''});put('vehicles',v.id,v,false);rer()};
  $('#vp_add').onchange=e=>{if(e.target.value)add([e.target.value])};const all=$('#vp_all');if(all)all.onclick=()=>add(coming().filter(r=>!v.px[r.id]&&(v.k=='bus'?r.tr==BAARAT:r.tr=='Train')).map(r=>r.id));
  $$('[data-pf]').forEach(inp=>inp.onchange=()=>{const i=inp.closest('[data-px]').dataset.px;v.px[i][inp.dataset.pf]=inp.value.trim();put('vehicles',v.id,v,false);const a=$(`[data-ps="${CSS.escape(i)}"]`);if(a)a.href=tcHref(v,R[i])});
- $$('[data-ps]').forEach(a=>a.onclick=()=>{v.px[a.dataset.ps].s=Date.now();setTimeout(()=>put('vehicles',v.id,v,false),300)});
+ $$('[data-ps]').forEach(a=>a.onclick=()=>{const i=a.dataset.ps,x=v.px[i],c=x.kc||KC[v.id+'|'+i];saveCard(c);x.kc=c;x.s=Date.now();setTimeout(()=>put('vehicles',v.id,v,false),300)});
  $$('[data-pr]').forEach(b=>b.onclick=()=>{delete v.px[b.dataset.pr];put('vehicles',v.id,v,false);rer()})};
 
 /* ================= ALERTS ================= */
@@ -519,7 +525,7 @@ P.invite = () => {const L=rlist(),inv=META.invite||{},has=!!inv.text||IM=='rsvp'
  <div class="fld"><label>What to send</label><div class="segy">${[['both','Invitation + RSVP'],['inv','Invitation only'],['rsvp','RSVP only']].map(([k,l])=>`<button data-im="${k}" class="${IM==k?'on':''}">${l}</button>`).join('')}</div></div>
  ${has?`<div class="fld"><label>Message · tap to edit</label><textarea class="msg" id="i_txt" rows="12">${esc(IM=='rsvp'?(inv.rsvpText||RSVP_ONLY):inv.text)}</textarea>
   ${IM=='both'?`<div class="lk" style="margin-top:6px">${svg('plus')}Added at the end: RSVP link ${esc(RSVP_URL)}</div>`:''}<div class="hint" id="i_sv">Changes save for everyone.</div></div>
-  <div class="btns"><a class="pill wa" style="flex:2.2;white-space:nowrap" id="i_wa" href="https://wa.me/?text=${encodeURIComponent(inviteText())}" target="_blank" rel="noopener">${svg('wa')}Share on WhatsApp</a><button class="pill out" style="flex:1" id="i_cp">${svg('copy')}Copy</button></div>
+  <div class="btns"><a class="pill wa" style="flex:2.2;white-space:nowrap" id="i_wa" href="https://api.whatsapp.com/send?text=${encodeURIComponent(inviteText())}" target="_blank" rel="noopener">${svg('wa')}Share on WhatsApp</a><button class="pill out" style="flex:1" id="i_cp">${svg('copy')}Copy</button></div>
   <div style="font-size:11px;color:var(--mute);text-align:center;margin-top:6px">WhatsApp opens — pick a person, a group or a broadcast list</div>`
  :`<div class="card empty" style="margin-top:10px">The invitation message is not saved yet. Import it once from <b>More → Import starting data</b> (file <b>invite_message_final_v2.txt</b>).<div class="rb" style="margin-top:10px"><button class="pill solid" data-go="import">Import starting data</button></div></div>`}
  <div class="sec" style="margin:12px 0 6px"><h3 class="H" style="font-size:19px">Latest replies <span class="new" style="vertical-align:4px">LIVE</span></h3><a href="#/guests">All ${L.length} ›</a></div>
@@ -529,7 +535,7 @@ B.invite = () => {$$('[data-im]').forEach(b=>b.onclick=()=>{IM=b.dataset.im;rend
  $('#i_qr').onclick=()=>{const u=IM=='rsvp'?RSVP_URL:CARD_URL;openSheet(`<b class="H" style="font-size:22px;color:var(--mar)">${IM=='rsvp'?'RSVP':'Invitation'} QR code</b><div id="qr"></div><div class="lk">${esc(u)}</div><div class="hint">Guests scan this with their phone camera. Long-press the code to save it.</div>${credit()}<div class="btns"><button class="pill out" id="q_x">Close</button></div>`,()=>{
   $('#q_x').onclick=closeSheet;if(window.QRCode)new QRCode($('#qr'),{text:u,width:200,height:200,colorDark:'#3b1417',colorLight:'#ffffff',correctLevel:QRCode.CorrectLevel.M});else $('#qr').textContent='QR engine not loaded - check connection'})};
  const ta=$('#i_txt');if(!ta)return;
- ta.oninput=()=>{const k=IM=='rsvp'?'rsvpText':'text';META.invite={...(META.invite||{}),[k]:ta.value};$('#i_wa').href='https://wa.me/?text='+encodeURIComponent(inviteText());$('#i_sv').textContent='Saving…';
+ ta.oninput=()=>{const k=IM=='rsvp'?'rsvpText':'text';META.invite={...(META.invite||{}),[k]:ta.value};$('#i_wa').href='https://api.whatsapp.com/send?text='+encodeURIComponent(inviteText());$('#i_sv').textContent='Saving…';
   clearTimeout(iT);iT=setTimeout(()=>{setDoc(doc(db,'meta','invite'),{[k]:ta.value,t2:Date.now()},{merge:true}).then(()=>{const s=$('#i_sv');if(s)s.textContent='Saved for everyone.'}).catch(e=>toast('Could not save: '+e.code))},800)};
  $('#i_cp').onclick=async()=>{try{await navigator.clipboard.writeText(inviteText());toast('Message copied')}catch(e){$('#dlt').textContent='Message';$('#ta').value=inviteText();$('#dld').hidden=true;$('#dlg').showModal()}}};
 
