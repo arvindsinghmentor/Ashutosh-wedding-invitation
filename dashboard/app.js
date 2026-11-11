@@ -535,14 +535,17 @@ let IM = 'both';
 const RSVP_ONLY = `🙏 *Jai Shri Ganesh* 🙏\n\nKindly fill this 1-minute RSVP for the wedding of *Ashutosh* & *Shrusti* (1–2 December 2026, Ujjain), so we can plan your room and travel:\n${RSVP_URL}\n\n*Dr. Sarita Singhal & the Singhal Family*`;
 const RSVP_LINE = `\n\n📝 *RSVP* (1 minute, for your room & travel):\n${RSVP_URL}`;
 function inviteText(){const inv=META.invite||{};if(IM=='rsvp')return inv.rsvpText||RSVP_ONLY;if(!inv.text)return '';return inv.text+(IM=='both'?RSVP_LINE:'')}
+// what the guest receives: picture, title and a Preview link (QR only for the invitation)
+const ivCard = (img, t, d, href, qr, tall) => `<div class="card ivc" style="padding:10px;display:flex;gap:12px;align-items:center"><img src="${img}" alt="${t}" style="width:78px;height:${tall?112:78}px;object-fit:cover;object-position:${tall?'center':'left'};border-radius:10px;border:1px solid var(--line);flex:none">
+ <div style="flex:1;font-size:11.5px;color:var(--mute);line-height:1.35"><b style="display:block;font-size:15px;color:var(--ink)">${t}</b>${d}
+ <div style="display:flex;gap:6px;margin-top:8px;flex-wrap:wrap"><a class="mapb" href="${href}" target="_blank" rel="noopener">${svg('eye')}Preview</a>${qr?`<button class="mapb" id="i_qr">${svg('qr')}QR code</button>`:''}</div></div></div>`;
 P.invite = () => {const L=rlist(),inv=META.invite||{},has=!!inv.text||IM=='rsvp';
  return ph('Invite guests',`${{both:'Invitation + RSVP',inv:'Invitation only',rsvp:'RSVP only'}[IM]} · replies come in live`)+`<div class="body">
- <div class="card" style="padding:10px;display:flex;gap:12px;align-items:center"><img src="../preview.jpg" alt="Invitation card" style="width:78px;height:112px;object-fit:cover;border-radius:10px;border:1px solid var(--line);flex:none">
- <div style="flex:1;font-size:11.5px;color:var(--mute);line-height:1.35"><b style="display:block;font-size:15px;color:var(--ink)">Wedding invitation</b>Animated card with the A&amp;S door, countdown and venues
- <div style="display:flex;gap:6px;margin-top:8px;flex-wrap:wrap"><a class="mapb" href="${CARD_URL}" target="_blank" rel="noopener">${svg('eye')}Preview</a><button class="mapb" id="i_qr">${svg('qr')}QR code</button></div></div></div>
+ ${IM!='rsvp'?ivCard('../preview.jpg','Wedding invitation','Animated card with the A&amp;S door, countdown and venues',CARD_URL,true,true):''}
+ ${IM!='inv'?ivCard('../rsvp/preview.jpg','RSVP page','1-minute form for room and travel · replies come in live',RSVP_URL,IM=='rsvp',false):''}
  <div class="fld"><label>What to send</label><div class="segy">${[['both','Invitation + RSVP'],['inv','Invitation only'],['rsvp','RSVP only']].map(([k,l])=>`<button data-im="${k}" class="${IM==k?'on':''}">${l}</button>`).join('')}</div></div>
  ${has?`<div class="fld"><label>Message · tap to edit</label><textarea class="msg" id="i_txt" rows="12">${esc(IM=='rsvp'?(inv.rsvpText||RSVP_ONLY):inv.text)}</textarea>
-  ${IM=='both'?`<div class="lk" style="margin-top:6px">${svg('plus')}Added at the end: RSVP link ${esc(RSVP_URL)}</div>`:''}<div class="hint" id="i_sv">Changes save for everyone.</div></div>
+  ${IM=='both'?`<div class="lk" style="margin-top:6px">${svg('plus')}Added at the end: RSVP link ${esc(RSVP_URL)}</div><div class="hint" style="margin-top:4px">WhatsApp shows a picture for the first link only, so guests see the invitation picture.</div>`:''}<div class="hint" id="i_sv">Changes save for everyone.</div></div>
   <div class="btns"><a class="pill wa" style="flex:2.2;white-space:nowrap" id="i_wa" href="https://api.whatsapp.com/send?text=${encodeURIComponent(inviteText())}" target="_blank" rel="noopener">${svg('wa')}Share on WhatsApp</a><button class="pill out" style="flex:1" id="i_cp">${svg('copy')}Copy</button></div>
   <div style="font-size:11px;color:var(--mute);text-align:center;margin-top:6px">WhatsApp opens — pick a person, a group or a broadcast list</div>`
  :`<div class="card empty" style="margin-top:10px">The invitation message is not saved yet. Import it once from <b>More → Import starting data</b> (file <b>invite_message_final_v2.txt</b>).<div class="rb" style="margin-top:10px"><button class="pill solid" data-go="import">Import starting data</button></div></div>`}
