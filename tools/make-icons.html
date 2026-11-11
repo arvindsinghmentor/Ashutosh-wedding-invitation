@@ -1,0 +1,21 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="author" content="Arvind Singh"><title>Icon maker</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@700&display=swap" rel="stylesheet">
+<style>body{background:#e9dfcc;font:14px system-ui;padding:20px}canvas{margin:8px;border-radius:12px}</style></head><body>
+<p>Draws the A&amp;S monogram app icons. <code>window.makeIcons()</code> returns PNG data URLs.</p>
+<script>
+async function draw(size, maskable){
+  await document.fonts.load('700 100px "Cormorant Garamond"');
+  const c = document.createElement('canvas'); c.width = c.height = size; const x = c.getContext('2d'), s = size / 512;
+  const g = x.createLinearGradient(0, 0, size, size); g.addColorStop(0, '#8a2232'); g.addColorStop(1, '#5e1520');
+  x.fillStyle = g;
+  if (maskable) x.fillRect(0, 0, size, size); else { x.beginPath(); x.roundRect(0, 0, size, size, 110 * s); x.fill(); }
+  const r = maskable ? 150 * s : 200 * s;                       // maskable keeps the art inside the safe zone
+  x.strokeStyle = '#d9b878'; x.lineWidth = 10 * s; x.beginPath(); x.arc(size / 2, size / 2, r, 0, 7); x.stroke();
+  x.strokeStyle = 'rgba(217,184,120,.55)'; x.lineWidth = 3 * s; x.beginPath(); x.arc(size / 2, size / 2, r - 18 * s, 0, 7); x.stroke();
+  x.fillStyle = '#f3dca6'; x.textAlign = 'center'; x.textBaseline = 'middle';
+  x.font = `700 ${(maskable ? 120 : 160) * s}px "Cormorant Garamond"`; x.fillText('A&S', size / 2, size / 2 + 6 * s);
+  document.body.appendChild(c); return c.toDataURL('image/png');
+}
+window.makeIcons = async () => ({ 'icon-192.png': await draw(192), 'icon-512.png': await draw(512), 'icon-maskable-512.png': await draw(512, true) });
+</script></body></html>
