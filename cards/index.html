@@ -108,8 +108,9 @@ function travelCard(C){const bus=C.k=='bus';document.title=(bus?'Bus':'Train')+'
   :`<div class="l">Train</div><div class="big2">${esc(C.no)}</div>${C.tn?`<div class="l">${esc(C.tn)}</div>`:''}`;
  $('#app').innerHTML=head(bus?'BUS CARD':'TRAIN CARD')+`<div class="key" style="margin-top:12px"><div class="kt"><div class="s">Ashutosh weds Shrusti</div><h3>${bus?'🚌 Bus card':'🚆 Train card'}</h3><div class="chip" aria-hidden="true"></div></div>
  <div class="km">${big}<div class="n">${esc(C.n)}</div>${C.px?`<div class="l">${esc(C.px)}</div>`:''}</div>
- <div class="kb">${row('Date',esc(C.d))}${bus?row('Leaves at',esc(C.tm))+row('Route',C.fr&&C.to?esc(C.fr)+' → '+esc(C.to):'')+row('Pickup point',esc(C.pp))
+ <div class="kb">${row('Date',esc(C.d))}${bus?row('Bus number',esc(C.no))+row('Leaves at',esc(C.tm))+row('Route',C.fr&&C.to?esc(C.fr)+' → '+esc(C.to):'')+row('Pickup point',esc(C.pp))
   :row('Departs',[C.fr,C.tm].filter(Boolean).map(esc).join(', '))+row('Arrives',[C.to,C.ta].filter(Boolean).map(esc).join(', '))+row('PNR',esc(C.pnr))+row('Coach',esc(C.co))+row('Seat / berth',esc(C.st))}
+ ${bus&&/^https:\/\//.test(C.pm||'')?`<p style="text-align:center;margin:12px 0 4px"><a class="btn o" href="${esc(C.pm)}" target="_blank" rel="noopener">Pickup point in Maps</a></p>`:''}
  ${bus&&C.dr?row('Driver',esc(C.dr)+(C.dp?`<br><a href="tel:+${esc(C.dp)}" style="color:var(--mar)">Call +${esc(C.dp)}</a>`:'')):''}
  <p style="text-align:center;color:var(--mute);font-size:13px;margin:12px 0 0">${bus?'Please reach the pickup point 15 minutes early.':'Please carry a photo ID for your train journey.'}</p>${foot}</div></div>`}
 /* short links carry an 8-letter code: the card is read from Firestore c/{code} (public get by exact code, no login) */

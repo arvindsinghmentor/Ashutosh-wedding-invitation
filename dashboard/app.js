@@ -383,8 +383,10 @@ function dedupe(){const by={};Object.values(R).filter(r=>!r.del&&r.p).forEach(r=
 
 /* ================= TRAVEL ================= */
 let TV = 'veh';
-const VF={bus:[['nm','Name','e.g. Baarat bus 1'],['no','Bus number','MP07 AB 1234'],['dt','Date','','date'],['tm','Departs at','','time'],['fr','From','Gwalior'],['to','To','Ujjain'],['pp','Pickup point','e.g. Sanskriti Hotel, Morar'],['dr','Driver name',''],['dp','Driver mobile','10-digit','tel'],['cap','Seats','40','number']],
- train:[['nm','Name','e.g. Train group 1'],['no','Train number','e.g. 12919'],['tn','Train name','e.g. Malwa Express'],['dt','Date','','date'],['fr','From station','Gwalior'],['tm','Departs at','','time'],['to','To station','Ujjain'],['ta','Arrives at','','time'],['co','Coach','e.g. S4 / B2'],['pnr','PNR (if one for the group)','10 digits','tel']]};
+const VF={bus:[['nm','Name','e.g. Baarat bus 1'],['no','Bus number','e.g. MP07 AB 1234'],['dt','Date','','date'],['tm','Departs at','','time'],['fr','From','e.g. Gwalior'],['to','To','e.g. Ujjain'],['pp','Pickup point','e.g. Sanskriti Hotel, Morar'],['pm','Pickup map link','Paste a Google Maps link','url'],['dr','Driver name','e.g. Ramesh'],['dp','Driver mobile','10-digit number','tel'],['cap','Seats','e.g. 40','number']],
+ train:[['nm','Name','e.g. Train group 1'],['no','Train number','e.g. 12919'],['tn','Train name','e.g. Malwa Express'],['dt','Date','','date'],['fr','From station','e.g. Gwalior'],['tm','Departs at','','time'],['to','To station','e.g. Ujjain'],['ta','Arrives at','','time'],['co','Coach','e.g. S4 / B2'],['pnr','PNR (if one for the group)','10-digit PNR','tel']]};
+// pickup map: the pasted link, else a Maps search for the pickup point
+const pickMap = v => v.pm || (v.pp ? 'https://maps.google.com/?q=' + encodeURIComponent([v.pp, v.fr].filter(Boolean).join(', ')) : '');
 function vLine(v){return v.k=='bus'?[v.no&&'Bus '+v.no,v.dr&&'driver '+v.dr,v.dp&&'+'+v.dp,v.pp&&'pickup '+v.pp].filter(Boolean).join(' · '):[v.no&&v.no+(v.tn?' · '+v.tn:''),v.co&&'coach '+v.co,v.pnr&&'PNR '+v.pnr].filter(Boolean).join(' · ')}
 function vCard(v){const ids=Object.keys(v.px||{}).filter(i=>R[i]&&!R[i].del),n=ids.reduce((a,i)=>a+people(R[i]),0),sent=ids.filter(i=>v.px[i].s).length,bus=v.k=='bus',cap=+v.cap||0;
  return `<button class="card vh" data-go="veh/${v.id}"><div class="top"><div class="ico" style="background:${bus?'#fbeef0':'#eaf1fa'}">${svg(bus?'bus':'train',bus?'#7b1e2b':'#2563a8')}</div><div class="t"><b>${esc(v.nm)}</b>${esc(vLine(v))||'Tap to add details'}</div>${v.dt?`<span class="tag ty">${sdate(v.dt)}</span>`:''}</div>
@@ -408,16 +410,19 @@ B.travel = () => {$$('[data-tv]').forEach(b=>b.onclick=()=>{TV=b.dataset.tv;rend
   $('#va_b').onclick=()=>vForm({k:'bus',nm:'Baarat bus '+(vs.filter(v=>v.k=='bus').length+1),fr:'Gwalior',to:'Ujjain',cap:40});
   $('#va_t').onclick=()=>vForm({k:'train',nm:'Train group '+(vs.filter(v=>v.k=='train').length+1),fr:'Gwalior',to:'Ujjain'})})}};
 function vForm(v){openSheet(`<b class="H" style="font-size:22px;color:var(--mar)">${v.id?'Edit':'New'} ${v.k}</b><div class="two">${VF[v.k].map(([k,l,phd,t])=>`<div class="fld"><label>${l}</label><input class="inp" data-vf="${k}" type="${t=='tel'?'text':t||'text'}"${t=='tel'||t=='number'?' inputmode="numeric"':''} value="${esc(k=='dp'&&v[k]?String(v[k]).replace(/^91/,''):v[k]||'')}" placeholder="${esc(phd)}"></div>`).join('')}</div>
+ ${v.k=='bus'?`<div class="hint" style="margin:8px 0 0">Pickup map: tap <b>Find on Maps</b>, choose the place, tap <b>Share → Copy link</b>, then paste it above.</div><div class="btns"><button class="pill out" id="ve_map">${svg('map')}Find on Maps</button></div>`:''}
  <div class="btns">${v.id?'<button class="pill danger" id="ve_d">Delete</button>':''}<button class="pill out" id="ve_x">Cancel</button><button class="pill solid" id="ve_ok">Save ${v.k}</button></div>`,s=>{
  $('#ve_x').onclick=closeSheet;
+ const vm=$('#ve_map');if(vm)vm.onclick=()=>{const pp=$('[data-vf="pp"]',s).value.trim(),fr=$('[data-vf="fr"]',s).value.trim();window.open('https://www.google.com/maps/search/?api=1&query='+encodeURIComponent([pp||'Sanskriti Hotel',fr].filter(Boolean).join(', ')),'_blank','noopener')};
  $('#ve_ok').onclick=()=>{const o=v.id?VH[v.id]:{id:uid(),px:{}};$$('[data-vf]',s).forEach(i=>o[i.dataset.vf]=i.value.trim());o.k=v.k;if(o.dp)o.dp=ph91(o.dp);if(!o.nm){toast('Give it a name');return}
   VH[o.id]=o;put('vehicles',o.id,o,false);closeSheet();toast((o.k=='bus'?'Bus':'Train')+' saved');rer()};
  const d=$('#ve_d');if(d)d.onclick=()=>{if(!confirm('Delete '+v.nm+'?'))return;const o=VH[v.id];o.del=1;put('vehicles',o.id,o,false);closeSheet();go('travel')}})}
-function tcHref(v,r){const x=v.px[r.id]||{};const C={k:v.k,n:r.n,px:paxWords(r),vn:v.nm,no:v.no||'',tn:v.tn||'',d:fdate(v.dt),tm:t12(v.tm),fr:v.fr||'',to:v.to||'',ta:t12(v.ta),pp:v.pp||'',dr:v.dr||'',dp:v.dp||'',co:x.co||v.co||'',pnr:x.pnr||v.pnr||'',st:x.st||''};
+function tcHref(v,r){const x=v.px[r.id]||{};const C={k:v.k,n:r.n,px:paxWords(r),vn:v.nm,no:v.no||'',tn:v.tn||'',d:fdate(v.dt),tm:t12(v.tm),fr:v.fr||'',to:v.to||'',ta:t12(v.ta),pp:v.pp||'',pm:v.k=='bus'?pickMap(v):'',dr:v.dr||'',dp:v.dp||'',co:x.co||v.co||'',pnr:x.pnr||v.pnr||'',st:x.st||''};
  const q=(c,t)=>c?t:null;
- const L=v.k=='bus'?['🚌 *Your bus details*','Ashutosh weds Shrusti','',`Dear ${r.n},`,`*${C.vn}*${C.no?' · Bus '+C.no:''}`,q(C.d,`🗓 ${C.d}${C.tm?', leaves at '+C.tm:''}`),q(C.pp,'📍 Pickup: '+C.pp),q(C.fr&&C.to,`➡️ ${C.fr} → ${C.to}`),q(C.st,'💺 Seat: '+C.st),q(C.dr,`👤 Driver: ${C.dr}${C.dp?' (+'+C.dp+')':''}`)]
- :['🚆 *Your train details*','Ashutosh weds Shrusti','',`Dear ${r.n},`,`*${C.no}${C.tn?' '+C.tn:''}*`,q(C.d,'🗓 '+C.d),q(C.fr,`🚉 ${C.fr} ${C.tm} → ${C.to} ${C.ta}`),q(C.pnr,'🎫 PNR: '+C.pnr),q(C.co||C.st,`💺 ${C.co?'Coach '+C.co:''}${C.co&&C.st?', ':''}${C.st?'Seat '+C.st:''}`)];
- L.push('','Your travel card:',CARDS_URL+v.k+'/#'+cardCode(v.id+'|'+r.id,x.kc,v.k,C),'','🙏 Dr. Sarita Singhal & the Singhal Family');
+ const card=CARDS_URL+v.k+'/#'+cardCode(v.id+'|'+r.id,x.kc,v.k,C);
+ const L=v.k=='bus'?['🚌 *Your bus details*','Ashutosh weds Shrusti','',`Dear ${r.n},`,'Your bus card:',card,'',`*${C.vn}*${C.no?' · Bus '+C.no:''}`,q(C.d,`🗓 ${C.d}${C.tm?', leaves at '+C.tm:''}`),q(C.pp,'📍 Pickup: '+C.pp),q(C.pm,C.pm),q(C.fr&&C.to,`➡️ ${C.fr} → ${C.to}`),q(C.st,'💺 Seat: '+C.st),q(C.dr,`👤 Driver: ${C.dr}${C.dp?' (+'+C.dp+')':''}`)]
+ :['🚆 *Your train details*','Ashutosh weds Shrusti','',`Dear ${r.n},`,'Your train card:',card,'',`*${C.no}${C.tn?' '+C.tn:''}*`,q(C.d,'🗓 '+C.d),q(C.fr,`🚉 ${C.fr} ${C.tm} → ${C.to} ${C.ta}`),q(C.pnr,'🎫 PNR: '+C.pnr),q(C.co||C.st,`💺 ${C.co?'Coach '+C.co:''}${C.co&&C.st?', ':''}${C.st?'Seat '+C.st:''}`)];
+ L.push('','🙏 Dr. Sarita Singhal & the Singhal Family');
  return waL(r.p,L.filter(x=>x!==null).join('\n'))}
 P.veh = id => {const v=VH[id];if(!v||v.del)return ph('Vehicle','Not found','','travel')+'<div class="body"><div class="card empty">This vehicle was deleted.</div></div>';
  const ids=Object.keys(v.px||{}).filter(i=>R[i]&&!R[i].del),C=coming().filter(r=>!v.px[r.id]),sug=C.filter(r=>v.k=='bus'?r.tr==BAARAT:r.tr=='Train'),bus=v.k=='bus';
