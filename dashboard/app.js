@@ -294,6 +294,18 @@ function keyHref(r){const room=roomOf(r),d=D[room];
  if(K.ar)L.push('🗓 Arrival: '+K.ar);if(K.px)L.push('👥 '+K.px);
  L.push('','Please show your key card at the reception. 🙏','Dr. Sarita Singhal & the Singhal Family');
  return waL(r.p,L.join('\n'))}
+/* room picker sheet: vacant rooms as tiles by floor, plus the current room with Remove */
+function roomPicker(r){const rm=roomOf(r),vac=vacant(),fl=[4,5].map(f=>[f,vac.filter(i=>D[i].f==f)]).filter(x=>x[1].length);
+ const tile=i=>`<button class="rpk" data-pick="${i}"><b class="H">${i}</b><span>${esc(rtype(i))}</span></button>`;
+ openSheet(`<b class="H" style="font-size:22px;color:var(--mar);display:block">${rm?'Change room':'Choose a room'}</b>
+  <div class="hint" style="margin:0 0 8px">${esc(r.n)} · ${paxWords(r)||'guests'}</div>
+  ${rm?`<div class="rpc"><div class="rm" style="background:${GC[D[rm].g||'f']};width:42px;height:42px;font-size:13px">${rm}</div><div class="t"><b>Now in room ${rm}</b><span>${esc(rtype(rm))} · ${D[rm].f}th floor</span></div><button class="pill danger sm" id="rp_rm">Remove</button></div>`:''}
+  ${fl.length?fl.map(([f,ids])=>`<div class="rpf">${f}th floor · ${ids.length} vacant</div><div class="rpg">${ids.map(tile).join('')}</div>`).join('')
+   :'<div class="hint" style="margin:10px 0">No vacant rooms. Free a room first in Rooms.</div>'}
+  <div class="btns"><button class="pill out" id="rp_x">Cancel</button></div>`,()=>{
+  const done=room=>{assign(r,room);closeSheet();toast(room?'Room '+room+' given to '+r.n:'Room removed');rer()};
+  $('#rp_x').onclick=closeSheet;const x=$('#rp_rm');if(x)x.onclick=()=>done('');
+  $$('[data-pick]').forEach(b=>b.onclick=()=>done(b.dataset.pick))})}
 const gfilt = {all:r=>1,coming:r=>r.a,need:r=>r.a&&r.rm&&!roomOf(r),key:r=>roomOf(r)&&!r.ks,declined:r=>!r.a};
 function gTags(r){const t=[],rm=roomOf(r);if(!r.a)return '<span class="tag tn">Not coming</span>';
  if(rm)t.push(r.ks?'<span class="tag tg">Key sent</span>':'<span class="tag ty">Key to send</span>');else if(r.rm)t.push('<span class="tag tr">Needs room</span>');
@@ -314,7 +326,7 @@ B.guests = () => {const q=$('#g_q');q.oninput=()=>{GQ=q.value;const p=q.selectio
 const _gp = P.guests;P.guests = a => {if(a&&gfilt[a]){GF=a;ARG='';history.replaceState(null,'','#/guests')}return _gp()};
 
 P.guest = id => {const r=R[id];if(!r||r.del)return ph('Guest','Not found','', 'guests')+'<div class="body"><div class="card empty">This RSVP was removed.</div></div>';
- const rm=roomOf(r),vac=vacant(),opts=[...(rm?[rm]:[]),...vac].map(i=>`<option value="${i}"${i==rm?' selected':''}>Room ${i} · ${D[i].f}th floor${T[i]?' · '+T[i]:''}</option>`).join(''),g=grpOf(r);
+ const rm=roomOf(r),vac=vacant(),g=grpOf(r);
  const trv=[];if(r.a&&(r.ar||r.tr))trv.push(['train','#eaf1fa','#2563a8',`Arriving ${[r.ar,t12(r.at)].filter(Boolean).join(' · ')||''}`,[r.tr,r.ax].filter(Boolean).join(' · ')+(r.pk?` · pickup ${r.pk=='Yes'?'needed':'from '+r.pk}`:'')]);
  if(r.a&&(r.dp||r.dm))trv.push(['pin','#fbf3e1','#b8862b',`Leaving ${[r.dp,t12(r.dt)].filter(Boolean).join(' · ')}`,[r.dm,r.dx].filter(Boolean).join(' · ')+(r.dr?` · drop ${r.dr=='Yes'?'needed':'to '+r.dr}`:'')]);
  vOf(r).forEach(v=>trv.push([v.k=='bus'?'bus':'train','#fbeef0','#7b1e2b',esc(v.nm),v.px[r.id].s?'Card sent '+when(v.px[r.id].s):'Card not sent yet']));
@@ -329,7 +341,7 @@ P.guest = id => {const r=R[id];if(!r||r.del)return ph('Guest','Not found','', 'g
   <div class="card" style="padding:12px 14px">${rm?`<div style="display:flex;align-items:center;gap:10px"><div class="rm" style="background:${GC[D[rm].g||'f']};width:46px;height:46px;font-size:14px">${rm}</div><div style="flex:1;font-size:12px;color:var(--mute)"><b style="display:block;font-size:15px;color:var(--ink)">${rtype(rm)} · ${D[rm].f}th floor</b>${r.ks?'Key sent '+when(r.ks):'Key not sent yet'}</div><span class="tag ${r.ks?'tg':'ty'}">${r.ks?'Sent':'To send'}</span></div>`
    :`<div style="font-size:13px;color:var(--mute)">${r.rm?'<b style="color:#9b2335">Needs a room</b> · ':'No room asked · '}${vac.length} rooms vacant</div>`}
    <div class="fld"><label>Group</label><select class="inp" id="gd_g">${ORDER.map(k=>`<option value="${k}"${k==g?' selected':''}>${GN[k]}</option>`).join('')}</select></div>
-   <div class="btns"><select class="pill out" id="gd_room" aria-label="Room" style="appearance:none;-webkit-appearance:none"><option value="">${rm?'Remove room':'Choose a room'}</option>${opts}</select>
+   <div class="btns"><button class="pill out" id="gd_room">${rm?svg('edit')+'Change room':svg('bed')+'Choose a room'}</button>
    ${rm?`<a class="pill wa" id="gd_key" href="${keyHref(r)}" target="_blank" rel="noopener">${svg('wa')}${r.ks?'Send key again':'Send key'}</a>`:''}</div></div>
   <div class="card" style="padding:10px 14px;margin-top:10px;display:flex;gap:16px;font-size:13px"><button style="flex:1;display:flex;justify-content:space-between;align-items:center" id="gd_ci">Arrived<span class="tog${r.ci?' on':''}"></span></button>${rm?`<button style="flex:1;display:flex;justify-content:space-between;align-items:center" id="gd_kg">Key given<span class="tog${r.kg?' on':''}"></span></button>`:''}</div>`
  :`<div class="card" style="padding:14px;margin-top:10px;font-size:13px;color:var(--mute)">Can’t make it 🙏</div>`}
@@ -339,7 +351,7 @@ B.guest = id => {const r=R[id];if(!r||r.del)return;
   $('#gd_x').onclick=closeSheet;$('#gd_del').onclick=()=>{const rm=roomOf(r);if(!confirm('Remove the RSVP from '+r.n+'?'+(rm?' Room '+rm+' will be set free.':'')))return;
    if(rm){Object.assign(D[rm],{name:'',pax:'',g:'',note:'',rid:''});putRoom(rm)}r.del=1;putR(r);closeSheet();go('guests');toast('RSVP removed')}});
  if(!r.a)return;
- $('#gd_room').onchange=e=>{assign(r,e.target.value);toast(e.target.value?'Room '+e.target.value+' given to '+r.n:'Room removed');e.target.blur();rer()}; // blur so the page redraws now
+ $('#gd_room').onclick=()=>roomPicker(r);
  $('#gd_g').onchange=e=>{r.g=e.target.value;const rm=roomOf(r);if(rm){D[rm].g=r.g;putRoom(rm)}putR(r)};
  const k=$('#gd_key');if(k)k.onclick=()=>{const c=r.kc||KC[r.id];saveCard(c);r.kc=c;r.ks=Date.now();putR(r)};
  $('#gd_ci').onclick=()=>{r.ci=r.ci?0:Date.now();putR(r)};const kg=$('#gd_kg');if(kg)kg.onclick=()=>{r.kg=r.kg?0:Date.now();putR(r)}};
