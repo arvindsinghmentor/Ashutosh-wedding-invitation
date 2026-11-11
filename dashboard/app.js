@@ -339,7 +339,7 @@ B.guest = id => {const r=R[id];if(!r||r.del)return;
   $('#gd_x').onclick=closeSheet;$('#gd_del').onclick=()=>{const rm=roomOf(r);if(!confirm('Remove the RSVP from '+r.n+'?'+(rm?' Room '+rm+' will be set free.':'')))return;
    if(rm){Object.assign(D[rm],{name:'',pax:'',g:'',note:'',rid:''});putRoom(rm)}r.del=1;putR(r);closeSheet();go('guests');toast('RSVP removed')}});
  if(!r.a)return;
- $('#gd_room').onchange=e=>{assign(r,e.target.value);toast(e.target.value?'Room '+e.target.value+' given to '+r.n:'Room removed')};
+ $('#gd_room').onchange=e=>{assign(r,e.target.value);toast(e.target.value?'Room '+e.target.value+' given to '+r.n:'Room removed');e.target.blur();rer()}; // blur so the page redraws now
  $('#gd_g').onchange=e=>{r.g=e.target.value;const rm=roomOf(r);if(rm){D[rm].g=r.g;putRoom(rm)}putR(r)};
  const k=$('#gd_key');if(k)k.onclick=()=>{const c=r.kc||KC[r.id];saveCard(c);r.kc=c;r.ks=Date.now();putR(r)};
  $('#gd_ci').onclick=()=>{r.ci=r.ci?0:Date.now();putR(r)};const kg=$('#gd_kg');if(kg)kg.onclick=()=>{r.kg=r.kg?0:Date.now();putR(r)}};
@@ -417,7 +417,7 @@ P.veh = id => {const v=VH[id];if(!v||v.del)return ph('Vehicle','Not found','','t
   <span>${x.s?'Card sent '+when(x.s):'Card not sent'}</span><div class="btns" style="margin-top:6px"><a class="pill wa sm" data-ps="${esc(i)}" href="${tcHref(v,r)}" target="_blank" rel="noopener">${svg('wa')}${x.s?'Send again':'Send card'}</a><button class="pill out sm" data-pr="${esc(i)}">Remove</button></div></div></div>`}).join('')||'<div class="empty">No passengers yet. Add families above.</div>'}</div></div>`};
 B.veh = id => {const v=VH[id];if(!v||v.del)return;$('#vp_e').onclick=()=>vForm({...v});
  const add=ids2=>{v.px=v.px||{};ids2.forEach(i=>v.px[i]=v.px[i]||{st:''});put('vehicles',v.id,v,false);rer()};
- $('#vp_add').onchange=e=>{if(e.target.value)add([e.target.value])};const all=$('#vp_all');if(all)all.onclick=()=>add(coming().filter(r=>!v.px[r.id]&&(v.k=='bus'?r.tr==BAARAT:r.tr=='Train')).map(r=>r.id));
+ $('#vp_add').onchange=e=>{e.target.blur();if(e.target.value)add([e.target.value])};const all=$('#vp_all');if(all)all.onclick=()=>add(coming().filter(r=>!v.px[r.id]&&(v.k=='bus'?r.tr==BAARAT:r.tr=='Train')).map(r=>r.id));
  $$('[data-pf]').forEach(inp=>inp.onchange=()=>{const i=inp.closest('[data-px]').dataset.px;v.px[i][inp.dataset.pf]=inp.value.trim();put('vehicles',v.id,v,false);const a=$(`[data-ps="${CSS.escape(i)}"]`);if(a)a.href=tcHref(v,R[i])});
  $$('[data-ps]').forEach(a=>a.onclick=()=>{const i=a.dataset.ps,x=v.px[i],c=x.kc||KC[v.id+'|'+i];saveCard(c);x.kc=c;x.s=Date.now();setTimeout(()=>put('vehicles',v.id,v,false),300)});
  $$('[data-pr]').forEach(b=>b.onclick=()=>{delete v.px[b.dataset.pr];put('vehicles',v.id,v,false);rer()})};
