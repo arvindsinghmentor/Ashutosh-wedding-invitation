@@ -1,0 +1,40 @@
+rules_version = '2';
+// A&S Wedding: Firestore rules. Designed by Arvind Singh.
+// Template: tools/build-rules.mjs fills the owner list from the private organiser list
+// and writes firestore.rules (gitignored), so no emails are committed.
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function signedIn() { return request.auth != null && request.auth.token.email_verified == true; }
+    function email() { return request.auth.token.email.lower(); }
+    function isOrg() {
+      return signedIn() && (email() in [__OWNERS__]
+        || exists(/databases/$(database)/documents/organisers/$(email())));
+    }
+    function str(k, max) { return !(k in request.resource.data) || (request.resource.data[k] is string && request.resource.data[k].size() <= max); }
+    function num(k, lo, hi) { return !(k in request.resource.data) || (request.resource.data[k] is int && request.resource.data[k] >= lo && request.resource.data[k] <= hi); }
+
+    // Guests: create only, with allowed fields and limits. Everything else: organisers.
+    match /rsvps/{id} {
+      allow create: if isOrg() || (
+        request.resource.data.keys().hasOnly(['v','n','p','a','sd','gk','ad','ch','mb','rm','ar','at','tr','ax','pk',
+                                               'dp','dt','dm','dx','dr','fx','m','t','ref','createdAt'])
+        && request.resource.data.keys().hasAll(['n','p','a','createdAt'])
+        && request.resource.data.n is string && request.resource.data.n.size() >= 1 && request.resource.data.n.size() <= 80
+        && request.resource.data.p is string && request.resource.data.p.matches('[0-9]{10,13}')
+        && request.resource.data.a in [0, 1]
+        && request.resource.data.createdAt == request.time
+        && num('v', 0, 99) && num('ad', 0, 30) && num('ch', 0, 30) && num('rm', 0, 1) && num('t', 0, 9999999999999)
+        && str('sd', 60) && str('gk', 20) && str('mb', 600) && str('ar', 20) && str('at', 10) && str('tr', 40)
+        && str('ax', 60) && str('pk', 120) && str('dp', 20) && str('dt', 10) && str('dm', 40) && str('dx', 60)
+        && str('dr', 120) && str('m', 400) && str('ref', 12)
+        && (!('fx' in request.resource.data) || (request.resource.data.fx is list && request.resource.data.fx.size() <= 10))
+      );
+      allow read, update, delete: if isOrg();
+    }
+
+    match /{coll}/{doc=**} {
+      allow read, write: if coll != 'rsvps' && isOrg();
+    }
+  }
+}

@@ -8,6 +8,9 @@ invite_message*.txt
 *.vcf
 *.csv
 
+# Built from firestore.rules.template (contains organiser emails)
+firestore.rules
+
 # Firebase local state
 .firebase/
 firebase-debug.log
