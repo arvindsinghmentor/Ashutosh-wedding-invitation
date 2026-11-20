@@ -213,13 +213,16 @@ function editRoom(id){const d=D[id];if(!d)return;SELR=id;if(els[id])paint(id);co
  ${roomGuest(id)}<div class="lb" style="margin-top:10px">Room label</div>
  <div class="two"><div class="fld"><label>Guest / family</label><input class="inp" id="e_a" value="${esc(d.name)}"></div><div class="fld"><label>Persons (e.g. 2+1)</label><input class="inp" id="e_b" value="${esc(d.pax)}"></div></div>
  <div class="fld"><label>Names of persons in this room</label><textarea class="inp" id="e_pn" rows="2" maxlength="600" placeholder="e.g. Rakesh, Sunita, Aarav">${esc(d.pn||'')}</textarea></div>
+ <div class="two"><div class="fld"><label>Contact no.</label><input class="inp" id="e_ph" type="tel" inputmode="tel" value="${esc(d.ph||'')}" placeholder="e.g. 98260 12345"></div><div class="fld"><label>Other persons' contact nos.</label><input class="inp" id="e_pc" inputmode="tel" value="${esc(d.pc||'')}" placeholder="e.g. Sunita 94250 11111"></div></div>
+ <div class="two"><div class="fld"><label>Arriving from</label><input class="inp" id="e_fr" value="${esc(d.fr||'')}" placeholder="e.g. Gwalior"></div><div class="fld"><label>Transport</label><select class="inp" id="e_tm"><option value="">Select…</option>${[...MODES,...(d.tm&&!MODES.some(m=>m[0]==d.tm)?[[d.tm,d.tm]]:[])].map(([v,t])=>`<option value="${esc(v)}"${v==d.tm?' selected':''}>${esc(t)}</option>`).join('')}</select></div></div>
+ <div class="fld"><label>Train / bus / flight / vehicle no.</label><input class="inp" id="e_tx" value="${esc(d.tx||'')}" placeholder="e.g. 12919"></div>
  <div class="fld"><label>Group</label><div class="opt" id="e_g">${ORDER.map(k=>`<button class="chip${k==g0?' on':''}" data-g="${k}">${GS[k]}</button>`).join('')}</div></div>
  <div class="fld"><label>Notes</label><input class="inp" id="e_n" value="${esc(d.note||'')}"></div>
  <div class="btns"><button class="pill out" id="e_clr">Remove</button><button class="pill solid" id="e_ok">Save</button></div>`,s=>{
   roomGuestBind(id);
   let g=g0;$$('[data-g]',s).forEach(b=>b.onclick=()=>{g=b.dataset.g;$$('[data-g]',s).forEach(x=>x.classList.toggle('on',x===b))});
-  $('#e_ok').onclick=()=>{Object.assign(d,{name:$('#e_a').value.trim(),pax:$('#e_b').value.trim(),pn:$('#e_pn').value.trim(),g:$('#e_a').value.trim()?(g||'f'):'',note:$('#e_n').value.trim()});if(!d.name)d.rid='';putRoom(id);closeSheet();toast('Room '+id+' saved')};
-  $('#e_clr').onclick=()=>{if(d.name&&!confirm('Clear room '+id+'?'))return;Object.assign(d,{name:'',pax:'',pn:'',g:'',note:'',rid:''});putRoom(id);closeSheet();toast('Room '+id+' is now vacant')}})}
+  $('#e_ok').onclick=()=>{Object.assign(d,{name:$('#e_a').value.trim(),pax:$('#e_b').value.trim(),pn:$('#e_pn').value.trim(),ph:$('#e_ph').value.trim(),pc:$('#e_pc').value.trim(),fr:$('#e_fr').value.trim(),tm:$('#e_tm').value,tx:$('#e_tx').value.trim(),g:$('#e_a').value.trim()?(g||'f'):'',note:$('#e_n').value.trim()});if(!d.name)d.rid='';putRoom(id);const gr=gOf(id);if(gr){const p=ph91(d.ph);Object.assign(gr,{mb:d.pn,pc:d.pc,fr:d.fr,tr:d.tm,ax:d.tx});if(/^\d{11,13}$/.test(p))gr.p=p;putR(gr)}closeSheet();toast('Room '+id+' saved')};
+  $('#e_clr').onclick=()=>{if(d.name&&!confirm('Clear room '+id+'?'))return;Object.assign(d,{name:'',pax:'',pn:'',ph:'',pc:'',fr:'',tm:'',tx:'',g:'',note:'',rid:''});putRoom(id);closeSheet();toast('Room '+id+' is now vacant')}})}
 
 /* full-screen floor plan with pinch zoom (from v9) */
 let els = {}, FLOOR = 0;const V = {x:0,y:0,k:1};
@@ -259,7 +262,7 @@ function pdfHTML(){const{rows,by,vac}=groups();
  return `<div class="paper"><h2>Ashutosh &amp; Shrusti — Guest Room Allotment</h2><div style="color:#666">2 December 2026 · Pukhraj Club &amp; Resort, Newa Kheda, Ujjain</div>
  <div style="margin:8px 0">${ORDER.map(k=>`<span class="pchip" style="background:${GC[k]};margin:0 6px 4px 0">${GN[k]}</span>`).join('')}</div>
  <div style="background:#fff8e1;border:1px solid #e2cfa6;border-radius:6px;padding:6px 10px;margin:8px 0;color:#7a5a00">✎ Tap any guest name, persons or note to edit, or change the category from the dropdown. Edits save automatically and go into the downloaded PDF, which also has fillable fields.</div><h4>Part 1 · Room-wise list</h4><table><tr><th>Room</th><th>Guest / family</th><th>Persons</th><th>Category</th><th>Notes</th></tr>
- ${rows.map(i=>{const d=D[i],c=GC[d.g||'f'];return `<tr data-r="${i}"><td><span class="pchip" style="background:${c}">${i}</span></td><td contenteditable data-k="name">${esc(d.name)}</td><td contenteditable data-k="pax">${esc(d.pax)}</td><td><select data-k="g" style="background:${c};color:#fff;border:0;border-radius:4px;font-weight:700;padding:2px 4px">${ORDER.map(k=>`<option value="${k}"${k==(d.g||'f')?' selected':''}>${GN[k]}</option>`).join('')}</select></td><td contenteditable data-k="note">${esc(d.note)}</td></tr>`}).join('')}</table>
+ ${rows.map(i=>{const d=D[i],c=GC[d.g||'f'];return `<tr data-r="${i}"><td><span class="pchip" style="background:${c}">${i}</span></td><td contenteditable data-k="name">${esc(d.name)}</td><td contenteditable data-k="pax">${esc(d.pax)}</td><td><select data-k="g" style="background:${c};color:#fff;border:0;border-radius:4px;font-weight:700;padding:2px 4px">${ORDER.map(k=>`<option value="${k}"${k==(d.g||'f')?' selected':''}>${GN[k]}</option>`).join('')}</select></td><td contenteditable data-k="note">${esc(d.note)}</td></tr><tr data-r="${i}" style="font-size:11px;color:#555"><td></td><td colspan="4">Names: <span contenteditable data-k="pn">${esc(d.pn||'')}</span> · Contact: <span contenteditable data-k="ph">${esc(d.ph||'')}</span>${d.pc?' / '+esc(d.pc):''} · From: <span contenteditable data-k="fr">${esc(d.fr||'')}</span> · Transport: ${esc([d.tm,d.tx].filter(Boolean).join(' ')||'-')}</td></tr>`}).join('')}</table>
  <h4>Part 2 · Category-wise</h4>${ORDER.filter(k=>by[k].length).map(k=>`<div class="cat" style="background:${GC[k]}"><span>${GN[k]}</span><span>${by[k].length} rooms · ${by[k].reduce((a,i)=>a+pn(D[i].pax),0)} persons</span></div><table>${by[k].map(i=>`<tr><td style="width:60px"><b>${i}</b></td><td>${esc(D[i].name)}</td><td>${esc(D[i].pax)}</td></tr>`).join('')}</table>`).join('')}
  <p style="color:#666">Vacant rooms: ${vac.join(', ')||'none'}</p><p style="color:#999;text-align:center;font-size:11px;margin-top:20px">${CREDIT}</p></div>`}
 let pT = {};
@@ -280,10 +283,12 @@ function makePDF(){const{rows,by,vac}=groups(),J=window.jspdf&&window.jspdf.jsPD
  head('Part 1 - Room-wise list');
  const th=()=>{doc.setFillColor(244,234,210);doc.rect(M,y,523,16,'F');doc.setFont('helvetica','bold');doc.setFontSize(9);doc.setTextColor(60);[['Room',M+6],['Guest / family',M+60],['Persons',M+270],['Category',M+330],['Notes',M+410]].forEach(([t,xx])=>doc.text(t,xx,y+11));y+=18};
  th();
- rows.forEach(i=>{const d=D[i],c=rgb(GC[d.g||'f']);if(y+18>800){doc.addPage();y=M;th()}
+ rows.forEach(i=>{const d=D[i],c=rgb(GC[d.g||'f']);if(y+40>800){doc.addPage();y=M;th()}
   doc.setFillColor(...c);doc.roundedRect(M+2,y,38,15,3,3,'F');doc.setTextColor(255);doc.setFont('helvetica','bold');doc.setFontSize(9);doc.text(i,M+21,y+11,{align:'center'});
   fld('name_'+i,d.name,M+60,205);fld('pax_'+i,d.pax,M+270,50);
   doc.setTextColor(...c);doc.setFont('helvetica','bold');doc.text(GN[d.g||'f'],M+330,y+11);fld('note_'+i,d.note,M+410,113);
+  const info=[d.pn&&'Names: '+d.pn,(d.ph||d.pc)&&'Contact: '+[d.ph,d.pc].filter(Boolean).join(' / '),d.fr&&'From: '+d.fr,(d.tm||d.tx)&&'Transport: '+[d.tm,d.tx].filter(Boolean).join(' ')].filter(Boolean).join('   |   ');
+  if(info){const ln=doc.splitTextToSize(info.replace(/[^ -~]/g,''),463).slice(0,2);doc.setFont('helvetica','normal');doc.setFontSize(8);doc.setTextColor(90);ln.forEach((t,k)=>doc.text(t,M+60,y+26+k*10));y+=ln.length*10+2}
   doc.setDrawColor(235);doc.line(M,y+17,M+523,y+17);y+=19});
  y+=14;head('Part 2 - Category-wise list');
  ORDER.filter(k=>by[k].length).forEach(k=>{need(40);const c=rgb(GC[k]);doc.setFillColor(...c);doc.rect(M,y,523,18,'F');doc.setTextColor(255);doc.setFont('helvetica','bold');doc.setFontSize(10);
@@ -294,7 +299,7 @@ function makePDF(){const{rows,by,vac}=groups(),J=window.jspdf&&window.jspdf.jsPD
  return doc}
 function dl(){const doc=makePDF();if(!doc)return toast('PDF engine not loaded - check connection');doc.save('AS_Wedding_Rooms_by_Arvind_Singh.pdf')}
 $('#pdl').onclick=dl;
-function csv(){const r=['Floor,Room,Type,Guest,Persons,Names,Group,Notes'];Object.keys(D).sort().forEach(id=>{const d=D[id];r.push([d.f,id,T[id]||'Executive',d.name,d.pax,d.pn,d.name?GN[d.g||'f']:'Vacant',d.note].map(v=>'"'+String(v==null?'':v).replace(/"/g,'""')+'"').join(','))});
+function csv(){const r=['Floor,Room,Type,Guest,Persons,Names,Contact,Other contacts,Arriving from,Transport,Group,Notes'];Object.keys(D).sort().forEach(id=>{const d=D[id];r.push([d.f,id,T[id]||'Executive',d.name,d.pax,d.pn,d.ph,d.pc,d.fr,[d.tm,d.tx].filter(Boolean).join(' '),d.name?GN[d.g||'f']:'Vacant',d.note].map(v=>'"'+String(v==null?'':v).replace(/"/g,'""')+'"').join(','))});
  r.push('','"'+CREDIT+'"');$('#dlt').textContent='Allotment list (CSV)';$('#ta').value=r.join('\n');$('#dld').hidden=false;$('#dlg').showModal()}
 $('#cl').onclick=()=>$('#dlg').close();
 $('#cp').onclick=async()=>{const t=$('#ta');try{await navigator.clipboard.writeText(t.value);toast('Copied')}catch(e){t.select();document.execCommand('copy')}};
@@ -302,8 +307,8 @@ $('#dld').onclick=()=>dlBlob(new Blob(['﻿'+$('#ta').value],{type:'text/csv'}),
 
 /* ================= GUESTS (RSVPs) ================= */
 let GF = 'all', GQ = '';
-function fillRoom(r,room){Object.assign(D[room],{name:r.n,pax:paxStr(r),pn:r.mb||D[room].pn||'',g:grpOf(r),note:[r.rl,'+'+r.p].filter(Boolean).join(' · '),rid:r.id})}
-function assign(r,room){const old=roomOf(r);if(old){Object.assign(D[old],{name:'',pax:'',pn:'',g:'',note:'',rid:''});putRoom(old)}
+function fillRoom(r,room){Object.assign(D[room],{name:r.n,pax:paxStr(r),pn:r.mb||D[room].pn||'',ph:r.p?'+'+r.p:'',pc:r.pc||'',fr:r.fr||'',tm:r.tr||'',tx:r.ax||'',g:grpOf(r),note:[r.rl,'+'+r.p].filter(Boolean).join(' · '),rid:r.id})}
+function assign(r,room){const old=roomOf(r);if(old){Object.assign(D[old],{name:'',pax:'',pn:'',ph:'',pc:'',fr:'',tm:'',tx:'',g:'',note:'',rid:''});putRoom(old)}
  if(room){fillRoom(r,room);putRoom(room)}r.room=room;putR(r)}
 /* short card links: the card's data is saved to c/{code} when Send is tapped; the link only carries the 8-letter code */
 const KC = {}, PAY = {};
@@ -372,7 +377,7 @@ P.guest = id => {const r=R[id];if(!r||r.del)return ph('Guest','Not found','', 'g
 B.guest = id => {const r=R[id];if(!r||r.del)return;
  $('#gd_menu').onclick=()=>openSheet(`<b class="H" style="font-size:22px;color:var(--mar)">${esc(r.n)}</b><div class="btns" style="flex-direction:column"><button class="pill out" id="gd_ed2">${svg('edit')}Edit details</button><a class="pill out" href="${waL(r.p)}" target="_blank" rel="noopener">${svg('wa')}Open WhatsApp chat</a><button class="pill danger" id="gd_del">Remove this RSVP</button><button class="pill out" id="gd_x">Cancel</button></div>`,s=>{
   $('#gd_x').onclick=closeSheet;$('#gd_ed2').onclick=()=>{closeSheet();go('gedit/'+encodeURIComponent(r.id))};$('#gd_del').onclick=()=>{const rm=roomOf(r);if(!confirm('Remove the RSVP from '+r.n+'?'+(rm?' Room '+rm+' will be set free.':'')))return;
-   if(rm){Object.assign(D[rm],{name:'',pax:'',pn:'',g:'',note:'',rid:''});putRoom(rm)}r.del=1;putR(r);closeSheet();go('guests');toast('RSVP removed')}});
+   if(rm){Object.assign(D[rm],{name:'',pax:'',pn:'',ph:'',pc:'',fr:'',tm:'',tx:'',g:'',note:'',rid:''});putRoom(rm)}r.del=1;putR(r);closeSheet();go('guests');toast('RSVP removed')}});
  $('#gd_edit').onclick=()=>go('gedit/'+encodeURIComponent(r.id));
  if(!r.a)return;
  $('#gd_room').onclick=()=>roomPicker(r);
@@ -390,9 +395,9 @@ const DATES = [];for(let d=25;d<=36;d++)DATES.push(`2026-${d>30?12:11}-${String(
 const isoOf = txt => DATES.find(d => fdate(d) === txt) || txt || '';
 let GE = null;   // form state, kept across redraws while the form is open
 function geInit(id){const r=id&&R[id];
- GE=r?{for:id,n:r.n||'',p:String(r.p||'').replace(/^91(?=\d{10}$)/,''),sd:r.sd||'',a:r.a?1:0,ad:r.ad||1,ch:r.ch||0,mb:r.mb||'',rm:r.rm?1:0,
+ GE=r?{for:id,n:r.n||'',p:String(r.p||'').replace(/^91(?=\d{10}$)/,''),pc:r.pc||'',fr:r.fr||'',sd:r.sd||'',a:r.a?1:0,ad:r.ad||1,ch:r.ch||0,mb:r.mb||'',rm:r.rm?1:0,
   ad_:isoOf(r.ar),at:r.at||'',tr:r.tr||'',ax:r.ax||'',dd_:isoOf(r.dp),dt:r.dt||'',dm:r.dm||'',dx:r.dx||'',dr:r.dr?'Yes':'',dq:r.dr&&r.dr!=='Yes'?r.dr:'',m:r.m||''}
- :{for:'new',n:'',p:'',sd:'',a:1,ad:1,ch:0,mb:'',rm:1,ad_:'',at:'',tr:'',ax:'',dd_:'',dt:'',dm:'',dx:'',dr:'',dq:'',m:''}}
+ :{for:'new',n:'',p:'',pc:'',fr:'',sd:'',a:1,ad:1,ch:0,mb:'',rm:1,ad_:'',at:'',tr:'',ax:'',dd_:'',dt:'',dm:'',dx:'',dr:'',dq:'',m:''}}
 P.gedit = id => {id=id||'';if(!GE||GE.for!==(id||'new'))geInit(id);const e=GE,r=id&&R[id];
  if(id&&!r)return ph('Edit guest','Not found','','guests')+'<div class="body"><div class="card empty">This guest was removed.</div></div>';
  const inp=(k,l,x='')=>`<div class="fld"><label for="ge_${k}">${l}</label><input class="inp" id="ge_${k}" data-ge="${k}" value="${esc(e[k])}" ${x}></div>`;
@@ -410,11 +415,13 @@ P.gedit = id => {id=id||'';if(!GE||GE.for!==(id||'new'))geInit(id);const e=GE,r=
  <div class="card" style="padding:4px 14px 14px">${inp('n','Full name *','autocomplete="off" maxlength="80" placeholder="e.g. Rakesh Mehta"')}
   <div class="fld"><label for="ge_p">WhatsApp number *</label><div class="pre"><i>+91</i><input id="ge_p" data-ge="p" type="tel" inputmode="tel" maxlength="14" value="${esc(e.p)}" placeholder="10-digit number"></div></div>
   ${dup?`<div class="hint" style="color:#8a6420">${esc(dup.n)} already replied with this number. Saving keeps one guest: their room, key and check-in stay.</div>`:''}
+  ${inp('pc','Other persons’ contact nos.','inputmode="tel" maxlength="200" placeholder="e.g. Sunita 94250 11111"')}
   ${sel('sd','How are they related?',REL.map(x=>x[0]))}
   ${seg('a','Coming?',[[1,'Yes, coming'],[0,'Can’t come']])}</div>
  ${e.a?`<div class="card" style="padding:4px 14px 14px;margin-top:10px"><div class="two">${step('ad','Adults')}${step('ch','Children')}</div>
   ${inp('mb','Names of everyone coming','maxlength="600" placeholder="e.g. Rakesh, Sunita, Aarav"')}
   ${seg('rm','Needs a room?',[[1,'Yes'],[0,'No']])}</div>
+  <div class="card" style="padding:4px 14px 14px;margin-top:10px">${inp('fr','Arriving from (city)','maxlength="80" placeholder="e.g. Gwalior"')}</div>
   ${trip('Arrival','ad_','at','tr','ax')}${trip('Departure','dd_','dt','dm','dx')}`
  :`<div class="card" style="padding:4px 14px 14px;margin-top:10px">${inp('m','Message (optional)','maxlength="400"')}</div>`}
  <div class="btns" style="margin-top:14px"><button class="pill out" id="ge_x">Cancel</button><button class="pill solid" id="ge_ok">${svg('check')}${id?'Save changes':'Save guest'}</button></div>
@@ -431,7 +438,7 @@ B.gedit = id => {id=id||'';const e=GE;if(!e)return;
   if(!n){toast('Please enter the name');$('#ge_n').focus();return}
   if(!/^\d{11,13}$/.test(p)){toast('Please enter a 10-digit mobile number');$('#ge_p').focus();return}
   const yes=!!e.a,rel=REL.find(x=>x[0]===e.sd),dv=v=>/^\d{4}-/.test(v)?fdate(v):(v||''),num=m=>NUML[m]?1:0;
-  const f={n:n.slice(0,80),p,a:yes?1:0,sd:e.sd,gk:rel?rel[1]:'',ad:yes?e.ad:0,ch:yes?e.ch:0,mb:yes?e.mb.trim():'',rm:yes?e.rm:0,
+  const f={n:n.slice(0,80),p,pc:e.pc.trim(),fr:yes?e.fr.trim():'',a:yes?1:0,sd:e.sd,gk:rel?rel[1]:'',ad:yes?e.ad:0,ch:yes?e.ch:0,mb:yes?e.mb.trim():'',rm:yes?e.rm:0,
    ar:yes?dv(e.ad_):'',at:yes?e.at:'',tr:yes?e.tr:'',ax:yes&&num(e.tr)?e.ax.trim():'',dp:yes?dv(e.dd_):'',dt:yes?e.dt:'',dm:yes?e.dm:'',dx:yes&&num(e.dm)?e.dx.trim():'',
    dr:yes&&e.dr==='Yes'?(e.dq||'Yes'):'',m:yes?'':e.m.trim()};
   let r;
@@ -689,7 +696,7 @@ function stopAll(){subs.splice(0).forEach(u=>u());D={};R={};CT={};TK={};VH={};OR
 function listen(coll, fn, meta = false){subs.push(onSnapshot(collection(db,coll),{includeMetadataChanges:meta},s=>{const m={};s.forEach(d=>m[d.id]={...d.data(),id:d.id});fn(m,s.metadata);SEEN[coll]=1;rer()},e=>{console.warn(coll,e.code);if(e.code=='permission-denied')gate('notorg')}))}
 let dT = 0;
 function startData(){
- listen('rooms',m=>{D={};Object.entries(m).forEach(([id,r])=>D[id]={f:+r.f||+id[0],name:r.name||'',pax:r.pax||'',pn:r.pn||'',g:r.g||'',note:r.note||'',rid:r.rid||''})});
+ listen('rooms',m=>{D={};Object.entries(m).forEach(([id,r])=>D[id]={f:+r.f||+id[0],name:r.name||'',pax:r.pax||'',pn:r.pn||'',ph:r.ph||'',pc:r.pc||'',fr:r.fr||'',tm:r.tm||'',tx:r.tx||'',g:r.g||'',note:r.note||'',rid:r.rid||''})});
  listen('rsvps',(m,md)=>{R=m;LIVE=!md.fromCache;clearTimeout(dT);dT=setTimeout(()=>{if(SEEN.rooms&&SEEN.vehicles)dedupe()},1500)},true);
  listen('contacts',m=>CT=m);listen('tasks',m=>TK=m);listen('vehicles',m=>VH=m);listen('organisers',m=>ORG=m);
  listen('meta',m=>{META={invite:m.invite||null,seed:m.seed||null}})}
