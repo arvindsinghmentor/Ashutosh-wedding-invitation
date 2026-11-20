@@ -210,10 +210,10 @@ function roomGuestBind(id){const r=gOf(id),q=x=>$('#'+x);
 let SELR = null;
 function editRoom(id){const d=D[id];if(!d)return;SELR=id;if(els[id])paint(id);const g0=d.g||(d.name?'f':'');
  openSheet(`<div style="display:flex;align-items:center;gap:10px"><div class="rm${d.name?'':' v'}" style="width:46px;height:46px;font-size:14px;${d.name?'background:'+GC[d.g||'f']:''}">${id}</div><div style="flex:1"><b class="H" style="font-size:22px;color:var(--mar)">Room ${id}</b><div style="font-size:11.5px;color:var(--mute)">${rtype(id)} · ${d.f}th floor</div></div><span class="tag ${d.name?'tg':'ty'}">${d.name?'Given':'Vacant'}</span></div>
+ ${roomGuest(id)}<div class="lb" style="margin-top:10px">Room label</div>
  <div class="two"><div class="fld"><label>Guest / family</label><input class="inp" id="e_a" value="${esc(d.name)}"></div><div class="fld"><label>Persons (e.g. 2+1)</label><input class="inp" id="e_b" value="${esc(d.pax)}"></div></div>
  <div class="fld"><label>Group</label><div class="opt" id="e_g">${ORDER.map(k=>`<button class="chip${k==g0?' on':''}" data-g="${k}">${GS[k]}</button>`).join('')}</div></div>
  <div class="fld"><label>Notes</label><input class="inp" id="e_n" value="${esc(d.note||'')}"></div>
- ${roomGuest(id)}
  <div class="btns"><button class="pill out" id="e_clr">Remove</button><button class="pill solid" id="e_ok">Save</button></div>`,s=>{
   roomGuestBind(id);
   let g=g0;$$('[data-g]',s).forEach(b=>b.onclick=()=>{g=b.dataset.g;$$('[data-g]',s).forEach(x=>x.classList.toggle('on',x===b))});
