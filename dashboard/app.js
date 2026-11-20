@@ -313,7 +313,7 @@ function gTags(r){const t=[],rm=roomOf(r);if(!r.a)return '<span class="tag tn">N
 const avatar = r => `<div class="avt" style="background:${r.a?GC[grpOf(r)]:'#a68a72'}">${esc(ini(r.n))}</div>`;
 P.guests = () => {const L=rlist(),yes=L.filter(r=>r.a),need=yes.filter(r=>r.rm),q=GQ.toLowerCase(),vac=vacant();
  const show=L.filter(gfilt[GF]).filter(r=>!q||[r.n,r.p,r.rl,r.sd,r.mb,roomOf(r)].join(' ').toLowerCase().includes(q));
- return ph('RSVPs',`${L.length} replies · ${yes.length} coming · ${L.length-yes.length} declined`,`<button class="ib" id="g_add" aria-label="Paste an RSVP link">${svg('plus')}</button>`)+`<div class="body">
+ return ph('RSVPs',`${L.length} replies · ${yes.length} coming · ${L.length-yes.length} declined`,`<button class="ib" id="g_add" aria-label="Add guest manually">${svg('plus')}</button>`)+`<div class="body">
  <label class="search"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></svg><input id="g_q" placeholder="Search name, number or room" value="${esc(GQ)}"></label>
  <div class="chips">${[['all','All'],['coming','Coming'],['need','Need room'],['key','Key to send'],['declined','Declined']].map(([k,l])=>`<button class="chip${GF==k?' on':''}" data-gf="${k}">${l}<b>${L.filter(gfilt[k]).length}</b></button>`).join('')}</div>
  <div class="card stat3"><div><b>${yes.reduce((a,r)=>a+people(r),0)}</b><span>guests</span></div><div><b>${need.filter(roomOf).length}<small style="font-size:13px;color:var(--mute)">/${need.length}</small></b><span>rooms given</span></div><div><b>${L.filter(r=>r.ks).length}</b><span>keys sent</span></div></div>
@@ -321,7 +321,7 @@ P.guests = () => {const L=rlist(),yes=L.filter(r=>r.a),need=yes.filter(r=>r.rm),
  <div class="card list" style="margin-top:10px">${show.map(r=>{const rm=roomOf(r);return `<button class="it" data-go="guest/${encodeURIComponent(r.id)}">${avatar(r)}<div class="t"><b>${esc(r.n)}</b><span>${r.a?[GS[grpOf(r)],people(r)+' people',r.tr&&(r.tr==BAARAT?'Baarat bus':r.tr)+(r.ar?', '+r.ar:'')].filter(Boolean).map(esc).join(' · '):'Declined'+(r.m?' with wishes':'')}</span><div class="tags">${gTags(r)}</div></div>
   ${r.a?`<div class="rn">${rm||'—'}<small>${rm?(T[rm]?T[rm].split(' ')[0]:'Exec room'):r.rm?'Assign':''}</small></div>`:''}</button>`}).join('')||`<div class="empty">${L.length?'No RSVP matches.':'No RSVPs yet. Share the invitation from <b>Invite guests</b>; replies appear here live.'}</div>`}</div></div>`};
 B.guests = () => {const q=$('#g_q');q.oninput=()=>{GQ=q.value;const p=q.selectionStart;render();const n=$('#g_q');n.focus();n.setSelectionRange(p,p)};
- $$('[data-gf]').forEach(b=>b.onclick=()=>{GF=b.dataset.gf;render()});$('#g_add').onclick=pasteSheet};
+ $$('[data-gf]').forEach(b=>b.onclick=()=>{GF=b.dataset.gf;render()});$('#g_add').onclick=()=>go('gedit')};
 // "guests/need" and "guests/key" come from Home
 const _gp = P.guests;P.guests = a => {if(a&&gfilt[a]){GF=a;ARG='';history.replaceState(null,'','#/guests')}return _gp()};
 
@@ -330,7 +330,7 @@ P.guest = id => {const r=R[id];if(!r||r.del)return ph('Guest','Not found','', 'g
  const trv=[];if(r.a&&(r.ar||r.tr))trv.push(['train','#eaf1fa','#2563a8',`Arriving ${[r.ar,t12(r.at)].filter(Boolean).join(' · ')||''}`,[r.tr,r.ax].filter(Boolean).join(' · ')+(r.pk?` · pickup ${r.pk=='Yes'?'needed':'from '+r.pk}`:'')]);
  if(r.a&&(r.dp||r.dm))trv.push(['pin','#fbf3e1','#b8862b',`Leaving ${[r.dp,t12(r.dt)].filter(Boolean).join(' · ')}`,[r.dm,r.dx].filter(Boolean).join(' · ')+(r.dr?` · drop ${r.dr=='Yes'?'needed':'to '+r.dr}`:'')]);
  vOf(r).forEach(v=>trv.push([v.k=='bus'?'bus':'train','#fbeef0','#7b1e2b',esc(v.nm),v.px[r.id].s?'Card sent '+when(v.px[r.id].s):'Card not sent yet']));
- return ph(esc(r.n),`Replied ${when(tOf(r))}${r.ref?' · ref '+esc(r.ref):''}`,`<button class="ib" id="gd_menu" aria-label="More">${svg('dots')}</button>`,'guests')+`<div class="body">
+ return ph(esc(r.n),`Replied ${when(tOf(r))}${r.ref?' · ref '+esc(r.ref):''}`,`<button class="ib out" id="gd_edit" aria-label="Edit guest">${svg('edit')}</button><button class="ib" id="gd_menu" aria-label="More">${svg('dots')}</button>`,'guests')+`<div class="body">
  <div class="card" style="padding:14px;display:flex;gap:12px;align-items:center">${avatar(r).replace('class="avt"','class="avt" style="width:48px;height:48px;font-size:16px;background:'+(r.a?GC[g]:'#a68a72')+'"')}<div style="flex:1;min-width:0;font-size:12px;color:var(--mute)"><b style="display:block;font-size:16px;color:var(--ink)">${esc(r.n)}</b>${[r.sd,r.rl].filter(Boolean).map(esc).join(', ')}${r.sd||r.rl?' · ':''}+${esc(r.p)}</div>
   <a class="cbtn call" href="tel:+${esc(r.p)}" aria-label="Call">${svg('phone')}</a><a class="cbtn wab" href="${waL(r.p)}" target="_blank" rel="noopener" aria-label="WhatsApp">${svg('wa')}</a></div>
  ${r.a?`<div class="card stat3" style="margin-top:10px"><div><b>${r.ad||0}</b><span>adults</span></div><div><b>${r.ch||0}</b><span>children</span></div><div><b>${r.rm?'Yes':'No'}</b><span>needs room</span></div></div>
@@ -347,9 +347,10 @@ P.guest = id => {const r=R[id];if(!r||r.del)return ph('Guest','Not found','', 'g
  :`<div class="card" style="padding:14px;margin-top:10px;font-size:13px;color:var(--mute)">Can’t make it 🙏</div>`}
  ${r.m?`<div class="msg" style="margin-top:10px">“${esc(r.m)}”</div>`:''}</div>`};
 B.guest = id => {const r=R[id];if(!r||r.del)return;
- $('#gd_menu').onclick=()=>openSheet(`<b class="H" style="font-size:22px;color:var(--mar)">${esc(r.n)}</b><div class="btns" style="flex-direction:column"><a class="pill out" href="${waL(r.p)}" target="_blank" rel="noopener">${svg('wa')}Open WhatsApp chat</a><button class="pill danger" id="gd_del">Remove this RSVP</button><button class="pill out" id="gd_x">Cancel</button></div>`,s=>{
-  $('#gd_x').onclick=closeSheet;$('#gd_del').onclick=()=>{const rm=roomOf(r);if(!confirm('Remove the RSVP from '+r.n+'?'+(rm?' Room '+rm+' will be set free.':'')))return;
+ $('#gd_menu').onclick=()=>openSheet(`<b class="H" style="font-size:22px;color:var(--mar)">${esc(r.n)}</b><div class="btns" style="flex-direction:column"><button class="pill out" id="gd_ed2">${svg('edit')}Edit details</button><a class="pill out" href="${waL(r.p)}" target="_blank" rel="noopener">${svg('wa')}Open WhatsApp chat</a><button class="pill danger" id="gd_del">Remove this RSVP</button><button class="pill out" id="gd_x">Cancel</button></div>`,s=>{
+  $('#gd_x').onclick=closeSheet;$('#gd_ed2').onclick=()=>{closeSheet();go('gedit/'+encodeURIComponent(r.id))};$('#gd_del').onclick=()=>{const rm=roomOf(r);if(!confirm('Remove the RSVP from '+r.n+'?'+(rm?' Room '+rm+' will be set free.':'')))return;
    if(rm){Object.assign(D[rm],{name:'',pax:'',g:'',note:'',rid:''});putRoom(rm)}r.del=1;putR(r);closeSheet();go('guests');toast('RSVP removed')}});
+ $('#gd_edit').onclick=()=>go('gedit/'+encodeURIComponent(r.id));
  if(!r.a)return;
  $('#gd_room').onclick=()=>roomPicker(r);
  $('#gd_g').onchange=e=>{r.g=e.target.value;const rm=roomOf(r);if(rm){D[rm].g=r.g;putRoom(rm)}putR(r)};
@@ -357,6 +358,63 @@ B.guest = id => {const r=R[id];if(!r||r.del)return;
  $('#gd_ci').onclick=()=>{r.ci=r.ci?0:Date.now();putR(r)};const kg=$('#gd_kg');if(kg)kg.onclick=()=>{r.kg=r.kg?0:Date.now();putR(r)}};
 
 /* paste-link import (fallback when a guest's RSVP could not be saved online) */
+/* ===== Add guest manually / Edit guest (same fields as RSVP v6) ===== */
+const REL = [["Ashutosh's paternal side (Singhal family)",'p'],["Ashutosh's maternal side",'m'],['Sibling / in-laws','s'],['Other relative','f'],['Friend of Ashutosh','r'],['Family friend / Doctor','g'],['Ujjain family & friends','u']];
+const MODES = [[BAARAT,'With baarat'],['Train','Train'],['Bus','Bus'],['Own vehicle','Own car'],['Flight','Flight']];
+const NUML = {Train:'Train number',Bus:'Bus / vehicle number','Own vehicle':'Vehicle number',Flight:'Flight number'};
+const PLACES = ['Ujjain Junction railway station','Indore airport','Indore railway station','Ujjain bus stand','Indore bus stand (Sarwate / ISBT)'];
+const DATES = [];for(let d=25;d<=36;d++)DATES.push(`2026-${d>30?12:11}-${String(d>30?d-30:d).padStart(2,'0')}`);
+const isoOf = txt => DATES.find(d => fdate(d) === txt) || txt || '';
+let GE = null;   // form state, kept across redraws while the form is open
+function geInit(id){const r=id&&R[id];
+ GE=r?{for:id,n:r.n||'',p:String(r.p||'').replace(/^91(?=\d{10}$)/,''),sd:r.sd||'',a:r.a?1:0,ad:r.ad||1,ch:r.ch||0,mb:r.mb||'',rm:r.rm?1:0,
+  ad_:isoOf(r.ar),at:r.at||'',tr:r.tr||'',ax:r.ax||'',dd_:isoOf(r.dp),dt:r.dt||'',dm:r.dm||'',dx:r.dx||'',dr:r.dr?'Yes':'',dq:r.dr&&r.dr!=='Yes'?r.dr:'',m:r.m||''}
+ :{for:'new',n:'',p:'',sd:'',a:1,ad:1,ch:0,mb:'',rm:1,ad_:'',at:'',tr:'',ax:'',dd_:'',dt:'',dm:'',dx:'',dr:'',dq:'',m:''}}
+P.gedit = id => {id=id||'';if(!GE||GE.for!==(id||'new'))geInit(id);const e=GE,r=id&&R[id];
+ if(id&&!r)return ph('Edit guest','Not found','','guests')+'<div class="body"><div class="card empty">This guest was removed.</div></div>';
+ const inp=(k,l,x='')=>`<div class="fld"><label for="ge_${k}">${l}</label><input class="inp" id="ge_${k}" data-ge="${k}" value="${esc(e[k])}" ${x}></div>`;
+ const sel=(k,l,opts)=>{const o=opts.map(v=>Array.isArray(v)?v:[v,v]);if(e[k]&&!o.some(x=>x[0]===e[k]))o.unshift([e[k],e[k]]);
+  return `<div class="fld"><label for="ge_${k}">${l}</label><select class="inp" id="ge_${k}" data-ge="${k}"><option value="">Select…</option>${o.map(([v,t])=>`<option value="${esc(v)}"${v===e[k]?' selected':''}>${esc(t)}</option>`).join('')}</select></div>`};
+ const seg=(k,l,o)=>`<div class="fld"><div class="lb">${l}</div><div class="segy">${o.map(([v,t])=>`<button type="button" data-gs="${k}" data-v="${v}" class="${String(e[k])===String(v)?'on':''}">${t}</button>`).join('')}</div></div>`;
+ const step=(k,l)=>`<div class="fld"><div class="lb">${l}</div><div class="step2"><button type="button" data-st="${k}" data-d="-1" aria-label="Fewer ${l.toLowerCase()}">−</button><b>${e[k]}</b><button type="button" data-st="${k}" data-d="1" aria-label="More ${l.toLowerCase()}">+</button></div></div>`;
+ const trip=(w,dk,tk,mk,xk)=>`<div class="card" style="padding:4px 14px 14px;margin-top:10px"><div class="th H">${svg('cal')}${w}</div>
+  <div class="two">${sel(dk,'Date',DATES.map(d=>[d,fdate(d)]))}${inp(tk,'Approx. time','type="time"')}</div>
+  <div class="fld"><div class="lb">Travelling by</div><div class="chips wrap">${MODES.map(([v,t])=>`<button type="button" class="chip${e[mk]===v?' on':''}" data-gm="${mk}" data-v="${esc(v)}">${t}</button>`).join('')}</div></div>
+  ${NUML[e[mk]]?inp(xk,NUML[e[mk]],'maxlength="60"'):''}
+  ${w=='Departure'?seg('dr','Need a drop?',[['Yes','Yes'],['','No']])+(e.dr==='Yes'?sel('dq','Drop point',PLACES):''):''}</div>`;
+ const dup=Object.values(R).find(x=>!x.del&&x.id!==id&&x.p&&x.p===ph91(e.p));
+ return ph(id?'Edit guest':'Add guest',id?esc(r.n):'Entered by an organiser','',id?'guest/'+encodeURIComponent(id):'guests')+`<div class="body">
+ <div class="card" style="padding:4px 14px 14px">${inp('n','Full name *','autocomplete="off" maxlength="80" placeholder="e.g. Rakesh Mehta"')}
+  <div class="fld"><label for="ge_p">WhatsApp number *</label><div class="pre"><i>+91</i><input id="ge_p" data-ge="p" type="tel" inputmode="tel" maxlength="14" value="${esc(e.p)}" placeholder="10-digit number"></div></div>
+  ${dup?`<div class="hint" style="color:#8a6420">${esc(dup.n)} already replied with this number. Saving keeps one guest: their room, key and check-in stay.</div>`:''}
+  ${sel('sd','How are they related?',REL.map(x=>x[0]))}
+  ${seg('a','Coming?',[[1,'Yes, coming'],[0,'Can’t come']])}</div>
+ ${e.a?`<div class="card" style="padding:4px 14px 14px;margin-top:10px"><div class="two">${step('ad','Adults')}${step('ch','Children')}</div>
+  ${inp('mb','Names of everyone coming','maxlength="600" placeholder="e.g. Rakesh, Sunita, Aarav"')}
+  ${seg('rm','Needs a room?',[[1,'Yes'],[0,'No']])}</div>
+  ${trip('Arrival','ad_','at','tr','ax')}${trip('Departure','dd_','dt','dm','dx')}`
+ :`<div class="card" style="padding:4px 14px 14px;margin-top:10px">${inp('m','Message (optional)','maxlength="400"')}</div>`}
+ <div class="btns" style="margin-top:14px"><button class="pill out" id="ge_x">Cancel</button><button class="pill solid" id="ge_ok">${svg('check')}${id?'Save changes':'Save guest'}</button></div>
+ ${id?'':'<div class="hint" style="text-align:center;margin-top:10px">Guest sent a WhatsApp “save” link instead? <button class="lnk" id="ge_paste">Paste the link</button></div>'}</div>`};
+B.gedit = id => {id=id||'';const e=GE;if(!e)return;
+ $$('[data-ge]').forEach(i=>i.oninput=i.onchange=()=>{e[i.dataset.ge]=i.value;if(i.tagName=='SELECT')render()});
+ $('#ge_p').onblur=()=>render();   // shows the "already replied" note
+ $$('[data-gs]').forEach(b=>b.onclick=()=>{const k=b.dataset.gs,v=b.dataset.v;e[k]=/^\d$/.test(v)?+v:v;render()});
+ $$('[data-gm]').forEach(b=>b.onclick=()=>{const k=b.dataset.gm;e[k]=e[k]===b.dataset.v?'':b.dataset.v;render()});
+ $$('[data-st]').forEach(b=>b.onclick=()=>{const k=b.dataset.st,min=k=='ad'?1:0;e[k]=Math.max(min,Math.min(30,(+e[k]||0)+ +b.dataset.d));render()});
+ const pz=$('#ge_paste');if(pz)pz.onclick=pasteSheet;
+ $('#ge_x').onclick=()=>{GE=null;go(id?'guest/'+encodeURIComponent(id):'guests')};
+ $('#ge_ok').onclick=()=>{const n=e.n.trim(),p=ph91(e.p);
+  if(!n){toast('Please enter the name');$('#ge_n').focus();return}
+  if(!/^\d{11,13}$/.test(p)){toast('Please enter a 10-digit mobile number');$('#ge_p').focus();return}
+  const yes=!!e.a,rel=REL.find(x=>x[0]===e.sd),dv=v=>/^\d{4}-/.test(v)?fdate(v):(v||''),num=m=>NUML[m]?1:0;
+  const f={n:n.slice(0,80),p,a:yes?1:0,sd:e.sd,gk:rel?rel[1]:'',ad:yes?e.ad:0,ch:yes?e.ch:0,mb:yes?e.mb.trim():'',rm:yes?e.rm:0,
+   ar:yes?dv(e.ad_):'',at:yes?e.at:'',tr:yes?e.tr:'',ax:yes&&num(e.tr)?e.ax.trim():'',dp:yes?dv(e.dd_):'',dt:yes?e.dt:'',dm:yes?e.dm:'',dx:yes&&num(e.dm)?e.dx.trim():'',
+   dr:yes&&e.dr==='Yes'?(e.dq||'Yes'):'',m:yes?'':e.m.trim()};
+  let r;
+  if(id){r=R[id];Object.assign(r,f);const rm=roomOf(r);if(rm){if(yes){fillRoom(r,rm);putRoom(rm)}else assign(r,'')}putR(r)}
+  else{id='org-'+uid();r={...f,id,v:6,src:'organiser',fx:[],t:Date.now(),by:ME.email,createdAt:serverTimestamp()};R[id]=r;putR(r)}
+  GE=null;toast('Saved: '+n);go('guest/'+encodeURIComponent(id))}};
 function pasteSheet(){openSheet(`<b class="H" style="font-size:22px;color:var(--mar)">Add an RSVP from a link</b><div class="hint">Only needed if a guest's WhatsApp message has a "save" link (their phone was offline).</div>
  <div class="fld"><label>Paste the link</label><input class="inp" id="pl" placeholder="…#rsvp-…"></div><div class="btns"><button class="pill out" id="pl_x">Cancel</button><button class="pill solid" id="pl_ok">Save link</button></div>`,()=>{
  $('#pl_x').onclick=closeSheet;$('#pl_ok').onclick=()=>{const m=$('#pl').value.match(/#rsvp-([0-9A-Za-z]+)/);if(!m){toast('Paste the whole link from the guest’s WhatsApp message.');return}closeSheet();askImport(m[1])}})}
@@ -376,7 +434,7 @@ let PENDIMP = null;
 /* same guest replying twice: carry room, key and check-in over to the newest reply */
 function dedupe(){const by={};Object.values(R).filter(r=>!r.del&&r.p).forEach(r=>(by[r.p]=by[r.p]||[]).push(r));
  Object.values(by).filter(a=>a.length>1).forEach(a=>{a.sort((x,y)=>tOf(y)-tOf(x));const n=a[0];
-  a.slice(1).forEach(o=>{['room','g','ks','ci','kg'].forEach(k=>{if(o[k]&&!n[k])n[k]=o[k]});
+  a.slice(1).forEach(o=>{['room','g','ks','ci','kg','kc'].forEach(k=>{if(o[k]&&!n[k])n[k]=o[k]});
    if(o.room&&D[o.room]&&D[o.room].rid===o.id){fillRoom(n,o.room);putRoom(o.room)}
    VH&&live(VH).forEach(v=>{if(v.px&&v.px[o.id]&&!v.px[n.id]){v.px[n.id]=v.px[o.id];delete v.px[o.id];put('vehicles',v.id,v,false)}});
    o.del=1;o.sup=n.id;putR(o)});putR(n)})}
