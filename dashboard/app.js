@@ -258,44 +258,50 @@ addEventListener('resize',()=>{if(!$('#fv').hidden)fit()});
 
 /* PDF preview + download (from v9) */
 function groups(){const rows=Object.keys(D).filter(i=>D[i].name).sort(),by={};ORDER.forEach(k=>by[k]=[]);rows.forEach(i=>by[D[i].g||'f'].push(i));return{rows,by,vac:vacant()}}
+// room list columns (no notes): shared by the preview and the PDF
+const PCOL = [['name','Guest / family',105],['pax','Persons',42],['pn','Names of persons',150],['ph','Contact no.',78],['pc','Other contact nos.',105],['fr','Arriving from',72],['tr','Transport',86],['g','Category',94]];
+const trOf = d => [d.tm == BAARAT ? 'With baarat' : d.tm, d.tx].filter(Boolean).join(' ');
 function pdfHTML(){const{rows,by,vac}=groups();
- return `<div class="paper"><h2>Ashutosh &amp; Shrusti — Guest Room Allotment</h2><div style="color:#666">2 December 2026 · Pukhraj Club &amp; Resort, Newa Kheda, Ujjain</div>
+ return `<div class="paper wide"><h2>Ashutosh &amp; Shrusti — Guest Room Allotment</h2><div style="color:#666">2 December 2026 · Pukhraj Club &amp; Resort, Newa Kheda, Ujjain</div>
  <div style="margin:8px 0">${ORDER.map(k=>`<span class="pchip" style="background:${GC[k]};margin:0 6px 4px 0">${GN[k]}</span>`).join('')}</div>
- <div style="background:#fff8e1;border:1px solid #e2cfa6;border-radius:6px;padding:6px 10px;margin:8px 0;color:#7a5a00">✎ Tap any guest name, persons or note to edit, or change the category from the dropdown. Edits save automatically and go into the downloaded PDF, which also has fillable fields.</div><h4>Part 1 · Room-wise list</h4><table><tr><th>Room</th><th>Guest / family</th><th>Persons</th><th>Category</th><th>Notes</th></tr>
- ${rows.map(i=>{const d=D[i],c=GC[d.g||'f'];return `<tr data-r="${i}"><td><span class="pchip" style="background:${c}">${i}</span></td><td contenteditable data-k="name">${esc(d.name)}</td><td contenteditable data-k="pax">${esc(d.pax)}</td><td><select data-k="g" style="background:${c};color:#fff;border:0;border-radius:4px;font-weight:700;padding:2px 4px">${ORDER.map(k=>`<option value="${k}"${k==(d.g||'f')?' selected':''}>${GN[k]}</option>`).join('')}</select></td><td contenteditable data-k="note">${esc(d.note)}</td></tr><tr data-r="${i}" style="font-size:11px;color:#555"><td></td><td colspan="4">Names: <span contenteditable data-k="pn">${esc(d.pn||'')}</span> · Contact: <span contenteditable data-k="ph">${esc(d.ph||'')}</span>${d.pc?' / '+esc(d.pc):''} · From: <span contenteditable data-k="fr">${esc(d.fr||'')}</span> · Transport: ${esc([d.tm,d.tx].filter(Boolean).join(' ')||'-')}</td></tr>`}).join('')}</table>
- <h4>Part 2 · Category-wise</h4>${ORDER.filter(k=>by[k].length).map(k=>`<div class="cat" style="background:${GC[k]}"><span>${GN[k]}</span><span>${by[k].length} rooms · ${by[k].reduce((a,i)=>a+pn(D[i].pax),0)} persons</span></div><table>${by[k].map(i=>`<tr><td style="width:60px"><b>${i}</b></td><td>${esc(D[i].name)}</td><td>${esc(D[i].pax)}</td></tr>`).join('')}</table>`).join('')}
+ <div style="background:#fff8e1;border:1px solid #e2cfa6;border-radius:6px;padding:6px 10px;margin:8px 0;color:#7a5a00">✎ Tap any cell to edit, or change the category from the dropdown. Edits save automatically and go into the downloaded PDF. Swipe the table sideways to see all columns.</div><h4>Part 1 · Room-wise list</h4>
+ <div class="tscroll"><table><tr><th>Room</th>${PCOL.map(c=>`<th>${c[1]}</th>`).join('')}</tr>
+ ${rows.map(i=>{const d=D[i],c=GC[d.g||'f'];return `<tr data-r="${i}"><td><span class="pchip" style="background:${c}">${i}</span></td>${PCOL.map(([k])=>k=='g'?`<td><select data-k="g" style="background:${c};color:#fff;border:0;border-radius:4px;font-weight:700;padding:2px 4px">${ORDER.map(o=>`<option value="${o}"${o==(d.g||'f')?' selected':''}>${GN[o]}</option>`).join('')}</select></td>`:k=='tr'?`<td contenteditable data-k="tx">${esc(trOf(d))}</td>`:`<td contenteditable data-k="${k}">${esc(d[k]||'')}</td>`).join('')}</tr>`}).join('')}</table></div>
+ <h4>Part 2 · Category-wise</h4>${ORDER.filter(k=>by[k].length).map(k=>`<div class="cat" style="background:${GC[k]}"><span>${GN[k]}</span><span>${by[k].length} rooms · ${by[k].reduce((a,i)=>a+pn(D[i].pax),0)} persons</span></div><table>${by[k].map(i=>`<tr><td style="width:60px"><b>${i}</b></td><td>${esc(D[i].name)}</td><td>${esc(D[i].pax)}</td><td>${esc(D[i].ph||'')}</td></tr>`).join('')}</table>`).join('')}
  <p style="color:#666">Vacant rooms: ${vac.join(', ')||'none'}</p><p style="color:#999;text-align:center;font-size:11px;margin-top:20px">${CREDIT}</p></div>`}
 let pT = {};
 function showPaper(){const b=$('#pbody'),t=b.scrollTop;b.innerHTML=pdfHTML();b.scrollTop=t;
  $$('tr[data-r]',b).forEach(tr=>{const id=tr.dataset.r;$$('[data-k]',tr).forEach(el=>{
   if(el.tagName=='SELECT')el.onchange=()=>{D[id].g=el.value;putRoom(id);showPaper()};
-  else el.oninput=()=>{D[id][el.dataset.k]=el.textContent;clearTimeout(pT[id]);pT[id]=setTimeout(()=>putRoom(id),700)}})})}
+  else el.oninput=()=>{const k=el.dataset.k,v=el.textContent.trim();if(k=='tx'){D[id].tm='';D[id].tx=v}else D[id][k]=v;clearTimeout(pT[id]);pT[id]=setTimeout(()=>putRoom(id),700)}})})}
 function openPaper(){showPaper();$('#pv').hidden=false}
 $('#px').onclick=()=>{$('#pv').hidden=true;rer()};
 function makePDF(){const{rows,by,vac}=groups(),J=window.jspdf&&window.jspdf.jsPDF;if(!J)return null;
- const doc=new J({unit:'pt',format:'a4'}),M=36;let y=M;const rgb=h=>[1,3,5].map(i=>parseInt(h.substr(i,2),16));
+ const doc=new J({unit:'pt',format:'a4',orientation:'landscape'}),M=36,W=770,BOT=560;let y=M;const rgb=h=>[1,3,5].map(i=>parseInt(h.substr(i,2),16));
  doc.setProperties({title:'Ashutosh & Shrusti - Guest Room Allotment',author:'Arvind Singh',creator:'A&S Wedding dashboard · Designed by Arvind Singh',subject:'Room allotment'});
- const need=n=>{if(y+n>800){doc.addPage();y=M}},cut=(s,w)=>doc.splitTextToSize(String(s||''),w)[0]||'';const AF=J.AcroForm,fld=(n,v,x,w)=>{try{const f=new AF.TextField();f.fieldName=n;f.Rect=[x,y,w,15];f.value=String(v||'');f.fontSize=9;f.maxFontSize=9;doc.addField(f)}catch(e){doc.text(cut(v,w),x,y+11)}};
+ const asc=s=>String(s||'').replace(/[^\x20-\x7E]/g,'').trim(),need=n=>{if(y+n>BOT){doc.addPage();y=M}};
  doc.setFont('helvetica','bold');doc.setFontSize(18);doc.setTextColor(123,30,43);doc.text('Ashutosh & Shrusti - Guest Room Allotment',M,y+14);y+=24;
  doc.setFont('helvetica','normal');doc.setFontSize(9);doc.setTextColor(100);doc.text('2 December 2026  |  Pukhraj Club & Resort, Newa Kheda, Ujjain',M,y+4);y+=18;
- let x=M;ORDER.forEach(k=>{const w=doc.getTextWidth(GN[k])+34;if(x+w>560){x=M;y+=18}doc.setFillColor(...rgb(GC[k]));doc.roundedRect(x,y,12,12,2,2,'F');doc.setTextColor(60);doc.text(GN[k],x+16,y+9);x+=w});y+=28;
+ let x=M;ORDER.forEach(k=>{const w=doc.getTextWidth(GN[k])+34;if(x+w>M+W){x=M;y+=18}doc.setFillColor(...rgb(GC[k]));doc.roundedRect(x,y,12,12,2,2,'F');doc.setTextColor(60);doc.text(GN[k],x+16,y+9);x+=w});y+=28;
  const head=t=>{need(40);doc.setFont('helvetica','bold');doc.setFontSize(12);doc.setTextColor(123,30,43);doc.text(t,M,y+10);y+=20};
- head('Part 1 - Room-wise list');
- const th=()=>{doc.setFillColor(244,234,210);doc.rect(M,y,523,16,'F');doc.setFont('helvetica','bold');doc.setFontSize(9);doc.setTextColor(60);[['Room',M+6],['Guest / family',M+60],['Persons',M+270],['Category',M+330],['Notes',M+410]].forEach(([t,xx])=>doc.text(t,xx,y+11));y+=18};
- th();
- rows.forEach(i=>{const d=D[i],c=rgb(GC[d.g||'f']);if(y+40>800){doc.addPage();y=M;th()}
-  doc.setFillColor(...c);doc.roundedRect(M+2,y,38,15,3,3,'F');doc.setTextColor(255);doc.setFont('helvetica','bold');doc.setFontSize(9);doc.text(i,M+21,y+11,{align:'center'});
-  fld('name_'+i,d.name,M+60,205);fld('pax_'+i,d.pax,M+270,50);
-  doc.setTextColor(...c);doc.setFont('helvetica','bold');doc.text(GN[d.g||'f'],M+330,y+11);fld('note_'+i,d.note,M+410,113);
-  const info=[d.pn&&'Names: '+d.pn,(d.ph||d.pc)&&'Contact: '+[d.ph,d.pc].filter(Boolean).join(' / '),d.fr&&'From: '+d.fr,(d.tm||d.tx)&&'Transport: '+[d.tm,d.tx].filter(Boolean).join(' ')].filter(Boolean).join('   |   ');
-  if(info){const ln=doc.splitTextToSize(info.replace(/[^ -~]/g,''),463).slice(0,2);doc.setFont('helvetica','normal');doc.setFontSize(8);doc.setTextColor(90);ln.forEach((t,k)=>doc.text(t,M+60,y+26+k*10));y+=ln.length*10+2}
-  doc.setDrawColor(235);doc.line(M,y+17,M+523,y+17);y+=19});
+ const RW=38,XS=[];let cx=M+RW+4;PCOL.forEach(c=>{XS.push(cx);cx+=c[2]});
+ const th=()=>{doc.setFillColor(244,234,210);doc.rect(M,y,W,18,'F');doc.setFont('helvetica','bold');doc.setFontSize(8.5);doc.setTextColor(60);doc.text('Room',M+4,y+12);
+  PCOL.forEach((c,j)=>doc.text(c[1],XS[j]+3,y+12));doc.setDrawColor(220);XS.forEach(xx=>doc.line(xx,y,xx,y+18));y+=18};
+ head('Part 1 - Room-wise list');th();
+ rows.forEach(i=>{const d=D[i],c=rgb(GC[d.g||'f']);doc.setFont('helvetica','normal');doc.setFontSize(8.5);
+  const cells=PCOL.map(([k,,w])=>{const v=k=='g'?GN[d.g||'f']:k=='tr'?trOf(d):d[k];return doc.splitTextToSize(asc(v),w-6).slice(0,4)});
+  const h=Math.max(16,Math.max(...cells.map(l=>l.length))*10+6);
+  if(y+h>BOT){doc.addPage();y=M;th()}
+  doc.setFillColor(...c);doc.roundedRect(M+2,y+2,RW-4,13,3,3,'F');doc.setTextColor(255);doc.setFont('helvetica','bold');doc.text(i,M+RW/2,y+11,{align:'center'});
+  cells.forEach((l,j)=>{const g=PCOL[j][0]=='g';doc.setFont('helvetica',g||j==0?'bold':'normal');if(g)doc.setTextColor(...c);else doc.setTextColor(30);l.forEach((t,n)=>doc.text(t,XS[j]+3,y+11+n*10))});
+  doc.setDrawColor(225);doc.line(M,y+h,M+W,y+h);XS.forEach(xx=>doc.line(xx,y,xx,y+h));y+=h});
  y+=14;head('Part 2 - Category-wise list');
- ORDER.filter(k=>by[k].length).forEach(k=>{need(40);const c=rgb(GC[k]);doc.setFillColor(...c);doc.rect(M,y,523,18,'F');doc.setTextColor(255);doc.setFont('helvetica','bold');doc.setFontSize(10);
-  doc.text(GN[k],M+8,y+12);doc.text(by[k].length+' rooms | '+by[k].reduce((a,i)=>a+pn(D[i].pax),0)+' persons',M+515,y+12,{align:'right'});y+=22;
-  by[k].forEach(i=>{need(16);doc.setTextColor(30);doc.setFont('helvetica','bold');doc.setFontSize(9);doc.text(i,M+8,y+9);doc.setFont('helvetica','normal');doc.text(cut(D[i].name,330),M+60,y+9);doc.text(String(D[i].pax||''),M+430,y+9);y+=15});y+=8});
+ ORDER.filter(k=>by[k].length).forEach(k=>{need(40);const c=rgb(GC[k]);doc.setFillColor(...c);doc.rect(M,y,W,18,'F');doc.setTextColor(255);doc.setFont('helvetica','bold');doc.setFontSize(10);
+  doc.text(GN[k],M+8,y+12);doc.text(by[k].length+' rooms | '+by[k].reduce((a,i)=>a+pn(D[i].pax),0)+' persons',M+W-8,y+12,{align:'right'});y+=22;
+  by[k].forEach(i=>{need(16);const d=D[i];doc.setTextColor(30);doc.setFont('helvetica','bold');doc.setFontSize(9);doc.text(i,M+8,y+9);doc.setFont('helvetica','normal');
+   doc.text(doc.splitTextToSize(asc(d.name),300)[0]||'',M+60,y+9);doc.text(asc(d.pax),M+380,y+9);doc.text(asc(d.ph),M+440,y+9);doc.text(doc.splitTextToSize(asc(trOf(d)),200)[0]||'',M+560,y+9);y+=15});y+=8});
  need(30);doc.setFontSize(9);doc.setTextColor(100);doc.text('Vacant rooms: '+(vac.join(', ')||'none'),M,y+10);
- const pages=doc.getNumberOfPages();for(let p=1;p<=pages;p++){doc.setPage(p);doc.setFont('helvetica','normal');doc.setFontSize(8);doc.setTextColor(140);doc.text(CREDIT+'   ·   page '+p+' of '+pages,297.5,828,{align:'center'})}
+ const pages=doc.getNumberOfPages();for(let p=1;p<=pages;p++){doc.setPage(p);doc.setFont('helvetica','normal');doc.setFontSize(8);doc.setTextColor(140);doc.text(CREDIT+'   ·   page '+p+' of '+pages,421,580,{align:'center'})}
  return doc}
 function dl(){const doc=makePDF();if(!doc)return toast('PDF engine not loaded - check connection');doc.save('AS_Wedding_Rooms_by_Arvind_Singh.pdf')}
 $('#pdl').onclick=dl;
