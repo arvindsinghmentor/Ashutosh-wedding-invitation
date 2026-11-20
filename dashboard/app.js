@@ -185,6 +185,27 @@ B.rooms = () => {if(!Object.keys(D).length)return;
   if(!confirm('Reset all rooms to the original allotment? Rooms given to RSVPs will be cleared.'))return;
   const b=writeBatch(db);Object.keys(D).forEach(id=>b.delete(doc(db,'rooms',id)));Object.entries(seedRooms(META.seed)).forEach(([id,r])=>b.set(doc(db,'rooms',id),{...r,t2:Date.now()}));b.commit().then(()=>toast('Rooms reset')).catch(e=>toast('Could not reset: '+e.code))}};
 
+/* guest actions inside the room sheet: open guest, edit, send key, change room; or give a vacant room to a guest */
+const gOf = id => {const d=D[id],r=d&&d.rid&&R[d.rid];return r&&!r.del&&roomOf(r)===id?r:null};
+function leaveFloor(){if(!$('#fv').hidden){$('#fv').hidden=true;FLOOR=0;els={}}}
+function roomGuest(id){const r=gOf(id);
+ if(r)return `<div class="card" style="padding:10px 12px;margin:10px 0 4px"><div style="font-size:11.5px;color:var(--mute)">Guest in this room</div>
+  <b style="font-size:15px">${esc(r.n)}</b><div style="font-size:11.5px;color:var(--mute)">${esc(paxWords(r))} · +${esc(r.p)}${r.ks?' · key sent':''}</div>
+  <div class="btns" style="flex-wrap:wrap"><button class="pill solid" id="rg_open">${svg('guest')}Guest page</button><button class="pill out" id="rg_edit">${svg('edit')}Edit details</button>
+  <a class="pill wa" id="rg_key" href="${keyHref(r)}" target="_blank" rel="noopener">${svg('wa')}${r.ks?'Send key again':'Send key'}</a><button class="pill out" id="rg_move">Change room</button></div>
+  <div class="hint">Bus and train cards: open the guest page.</div></div>`;
+ const need=live(R).filter(x=>x.a&&!roomOf(x)).sort((a,b)=>(b.rm?1:0)-(a.rm?1:0)||String(a.n).localeCompare(b.n));
+ return `<div class="card" style="padding:10px 12px;margin:10px 0 4px"><div style="font-size:11.5px;color:var(--mute)">Give this room to a guest</div>
+  ${need.length?`<select class="inp" id="rg_pick" style="margin-top:6px"><option value="">Choose a guest…</option>${need.map(x=>`<option value="${esc(x.id)}">${esc(x.n)} · ${esc(paxStr(x))}${x.rm?' · needs room':''}</option>`).join('')}</select>`:'<div class="hint">No guest without a room yet.</div>'}
+  <div class="btns" style="flex-wrap:wrap">${need.length?'<button class="pill solid" id="rg_give">Give room</button>':''}<button class="pill out" id="rg_new">${svg('plus')}Add new guest</button></div></div>`}
+function roomGuestBind(id){const r=gOf(id),q=x=>$('#'+x);
+ if(r){const goG=p=>{closeSheet();leaveFloor();go(p+'/'+encodeURIComponent(r.id))};
+  q('rg_open').onclick=()=>goG('guest');q('rg_edit').onclick=()=>goG('gedit');
+  q('rg_key').onclick=()=>{const c=r.kc||KC[r.id];saveCard(c);r.kc=c;r.ks=Date.now();putR(r)};
+  q('rg_move').onclick=()=>{closeSheet();leaveFloor();roomPicker(r)};return}
+ const gv=q('rg_give');if(gv)gv.onclick=()=>{const x=R[q('rg_pick').value];if(!x){toast('Choose a guest first');return}
+  assign(x,id);if(els[id])paint(id);closeSheet();toast('Room '+id+' given to '+x.n);rer()};
+ q('rg_new').onclick=()=>{closeSheet();leaveFloor();GE=null;go('gedit')}}
 /* room editor sheet (replaces the v9 side panel) */
 let SELR = null;
 function editRoom(id){const d=D[id];if(!d)return;SELR=id;if(els[id])paint(id);const g0=d.g||(d.name?'f':'');
@@ -192,8 +213,9 @@ function editRoom(id){const d=D[id];if(!d)return;SELR=id;if(els[id])paint(id);co
  <div class="two"><div class="fld"><label>Guest / family</label><input class="inp" id="e_a" value="${esc(d.name)}"></div><div class="fld"><label>Persons (e.g. 2+1)</label><input class="inp" id="e_b" value="${esc(d.pax)}"></div></div>
  <div class="fld"><label>Group</label><div class="opt" id="e_g">${ORDER.map(k=>`<button class="chip${k==g0?' on':''}" data-g="${k}">${GS[k]}</button>`).join('')}</div></div>
  <div class="fld"><label>Notes</label><input class="inp" id="e_n" value="${esc(d.note||'')}"></div>
- ${d.rid&&R[d.rid]?`<div class="hint">Given to RSVP: <b>${esc(R[d.rid].n)}</b></div>`:''}
+ ${roomGuest(id)}
  <div class="btns"><button class="pill out" id="e_clr">Remove</button><button class="pill solid" id="e_ok">Save</button></div>`,s=>{
+  roomGuestBind(id);
   let g=g0;$$('[data-g]',s).forEach(b=>b.onclick=()=>{g=b.dataset.g;$$('[data-g]',s).forEach(x=>x.classList.toggle('on',x===b))});
   $('#e_ok').onclick=()=>{Object.assign(d,{name:$('#e_a').value.trim(),pax:$('#e_b').value.trim(),g:$('#e_a').value.trim()?(g||'f'):'',note:$('#e_n').value.trim()});if(!d.name)d.rid='';putRoom(id);closeSheet();toast('Room '+id+' saved')};
   $('#e_clr').onclick=()=>{if(d.name&&!confirm('Clear room '+id+'?'))return;Object.assign(d,{name:'',pax:'',g:'',note:'',rid:''});putRoom(id);closeSheet();toast('Room '+id+' is now vacant')}})}
