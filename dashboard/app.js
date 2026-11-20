@@ -163,7 +163,7 @@ P.rooms = () => {const tot=Object.keys(D).length,vac=vacant().length;
  if(!tot)return ph('Rooms','No room plan yet')+`<div class="body"><div class="card empty">Import the starting room plan once, then rooms appear here.<div class="rb" style="margin-top:10px"><button class="pill solid" data-go="import">Import starting data</button></div></div></div>`;
  const q=RQ.toLowerCase(),hit=id=>!q||id.includes(q)||D[id].name.toLowerCase().includes(q)||(D[id].note||'').toLowerCase().includes(q);
  let inner;
- if(RF=='list'){const ids=Object.keys(D).sort().filter(hit);inner=`<div class="card list">${ids.map(id=>{const d=D[id];return `<button class="it" data-room="${id}"><div class="rm${d.name?'':' v'}" style="width:40px;flex:none;${d.name?'background:'+GC[d.g||'f']:''}">${id}</div><div class="t"><b>${esc(d.name||'Vacant')}</b><span>${[rtype(id),d.pax&&d.pax+' persons',d.name&&GS[d.g||'f'],d.note].filter(Boolean).map(esc).join(' · ')}</span></div></button>`}).join('')||'<div class="empty">No room matches your search.</div>'}</div>`}
+ if(RF=='list'){const ids=Object.keys(D).sort().filter(hit);inner=`<div class="card list">${ids.map(id=>{const d=D[id];return `<button class="it" data-room="${id}"><div class="rm${d.name?'':' v'}" style="width:40px;flex:none;${d.name?'background:'+GC[d.g||'f']:''}">${id}</div><div class="t"><b>${esc(d.name||'Vacant')}</b><span>${[rtype(id),d.pax&&d.pax+' persons',d.pn,d.name&&GS[d.g||'f'],d.note].filter(Boolean).map(esc).join(' · ')}</span></div></button>`}).join('')||'<div class="empty">No room matches your search.</div>'}</div>`}
  else{const ids=idsOf(RF),g=ids.filter(i=>D[i].name).length;
   const cells=ids.map(id=>{const p=POS[+id%100],d=D[id];if(!p)return'';return `<button class="rm${d.name?'':' v'}${id=='422'?' gr':''}${hit(id)?'':' dim'}" data-room="${id}" style="grid-column:${p[0]}${p[2]?'/span '+p[2]:''};grid-row:${p[1]};${d.name?'background:'+GC[d.g||'f']:''}">${id}</button>`}).join('')
    +`<div class="rm deco" style="grid-column:8;grid-row:1/4;height:auto">Stairs<br>&amp; Lift</div><div class="rm deco" style="grid-column:2;grid-row:5">Service</div><div class="rm deco" style="grid-column:8;grid-row:5">Lobby</div>`
@@ -212,13 +212,14 @@ function editRoom(id){const d=D[id];if(!d)return;SELR=id;if(els[id])paint(id);co
  openSheet(`<div style="display:flex;align-items:center;gap:10px"><div class="rm${d.name?'':' v'}" style="width:46px;height:46px;font-size:14px;${d.name?'background:'+GC[d.g||'f']:''}">${id}</div><div style="flex:1"><b class="H" style="font-size:22px;color:var(--mar)">Room ${id}</b><div style="font-size:11.5px;color:var(--mute)">${rtype(id)} · ${d.f}th floor</div></div><span class="tag ${d.name?'tg':'ty'}">${d.name?'Given':'Vacant'}</span></div>
  ${roomGuest(id)}<div class="lb" style="margin-top:10px">Room label</div>
  <div class="two"><div class="fld"><label>Guest / family</label><input class="inp" id="e_a" value="${esc(d.name)}"></div><div class="fld"><label>Persons (e.g. 2+1)</label><input class="inp" id="e_b" value="${esc(d.pax)}"></div></div>
+ <div class="fld"><label>Names of persons in this room</label><textarea class="inp" id="e_pn" rows="2" maxlength="600" placeholder="e.g. Rakesh, Sunita, Aarav">${esc(d.pn||'')}</textarea></div>
  <div class="fld"><label>Group</label><div class="opt" id="e_g">${ORDER.map(k=>`<button class="chip${k==g0?' on':''}" data-g="${k}">${GS[k]}</button>`).join('')}</div></div>
  <div class="fld"><label>Notes</label><input class="inp" id="e_n" value="${esc(d.note||'')}"></div>
  <div class="btns"><button class="pill out" id="e_clr">Remove</button><button class="pill solid" id="e_ok">Save</button></div>`,s=>{
   roomGuestBind(id);
   let g=g0;$$('[data-g]',s).forEach(b=>b.onclick=()=>{g=b.dataset.g;$$('[data-g]',s).forEach(x=>x.classList.toggle('on',x===b))});
-  $('#e_ok').onclick=()=>{Object.assign(d,{name:$('#e_a').value.trim(),pax:$('#e_b').value.trim(),g:$('#e_a').value.trim()?(g||'f'):'',note:$('#e_n').value.trim()});if(!d.name)d.rid='';putRoom(id);closeSheet();toast('Room '+id+' saved')};
-  $('#e_clr').onclick=()=>{if(d.name&&!confirm('Clear room '+id+'?'))return;Object.assign(d,{name:'',pax:'',g:'',note:'',rid:''});putRoom(id);closeSheet();toast('Room '+id+' is now vacant')}})}
+  $('#e_ok').onclick=()=>{Object.assign(d,{name:$('#e_a').value.trim(),pax:$('#e_b').value.trim(),pn:$('#e_pn').value.trim(),g:$('#e_a').value.trim()?(g||'f'):'',note:$('#e_n').value.trim()});if(!d.name)d.rid='';putRoom(id);closeSheet();toast('Room '+id+' saved')};
+  $('#e_clr').onclick=()=>{if(d.name&&!confirm('Clear room '+id+'?'))return;Object.assign(d,{name:'',pax:'',pn:'',g:'',note:'',rid:''});putRoom(id);closeSheet();toast('Room '+id+' is now vacant')}})}
 
 /* full-screen floor plan with pinch zoom (from v9) */
 let els = {}, FLOOR = 0;const V = {x:0,y:0,k:1};
@@ -293,7 +294,7 @@ function makePDF(){const{rows,by,vac}=groups(),J=window.jspdf&&window.jspdf.jsPD
  return doc}
 function dl(){const doc=makePDF();if(!doc)return toast('PDF engine not loaded - check connection');doc.save('AS_Wedding_Rooms_by_Arvind_Singh.pdf')}
 $('#pdl').onclick=dl;
-function csv(){const r=['Floor,Room,Type,Guest,Persons,Group,Notes'];Object.keys(D).sort().forEach(id=>{const d=D[id];r.push([d.f,id,T[id]||'Executive',d.name,d.pax,d.name?GN[d.g||'f']:'Vacant',d.note].map(v=>'"'+String(v==null?'':v).replace(/"/g,'""')+'"').join(','))});
+function csv(){const r=['Floor,Room,Type,Guest,Persons,Names,Group,Notes'];Object.keys(D).sort().forEach(id=>{const d=D[id];r.push([d.f,id,T[id]||'Executive',d.name,d.pax,d.pn,d.name?GN[d.g||'f']:'Vacant',d.note].map(v=>'"'+String(v==null?'':v).replace(/"/g,'""')+'"').join(','))});
  r.push('','"'+CREDIT+'"');$('#dlt').textContent='Allotment list (CSV)';$('#ta').value=r.join('\n');$('#dld').hidden=false;$('#dlg').showModal()}
 $('#cl').onclick=()=>$('#dlg').close();
 $('#cp').onclick=async()=>{const t=$('#ta');try{await navigator.clipboard.writeText(t.value);toast('Copied')}catch(e){t.select();document.execCommand('copy')}};
@@ -301,8 +302,8 @@ $('#dld').onclick=()=>dlBlob(new Blob(['﻿'+$('#ta').value],{type:'text/csv'}),
 
 /* ================= GUESTS (RSVPs) ================= */
 let GF = 'all', GQ = '';
-function fillRoom(r,room){Object.assign(D[room],{name:r.n,pax:paxStr(r),g:grpOf(r),note:[r.rl,'+'+r.p].filter(Boolean).join(' · '),rid:r.id})}
-function assign(r,room){const old=roomOf(r);if(old){Object.assign(D[old],{name:'',pax:'',g:'',note:'',rid:''});putRoom(old)}
+function fillRoom(r,room){Object.assign(D[room],{name:r.n,pax:paxStr(r),pn:r.mb||D[room].pn||'',g:grpOf(r),note:[r.rl,'+'+r.p].filter(Boolean).join(' · '),rid:r.id})}
+function assign(r,room){const old=roomOf(r);if(old){Object.assign(D[old],{name:'',pax:'',pn:'',g:'',note:'',rid:''});putRoom(old)}
  if(room){fillRoom(r,room);putRoom(room)}r.room=room;putR(r)}
 /* short card links: the card's data is saved to c/{code} when Send is tapped; the link only carries the 8-letter code */
 const KC = {}, PAY = {};
@@ -371,7 +372,7 @@ P.guest = id => {const r=R[id];if(!r||r.del)return ph('Guest','Not found','', 'g
 B.guest = id => {const r=R[id];if(!r||r.del)return;
  $('#gd_menu').onclick=()=>openSheet(`<b class="H" style="font-size:22px;color:var(--mar)">${esc(r.n)}</b><div class="btns" style="flex-direction:column"><button class="pill out" id="gd_ed2">${svg('edit')}Edit details</button><a class="pill out" href="${waL(r.p)}" target="_blank" rel="noopener">${svg('wa')}Open WhatsApp chat</a><button class="pill danger" id="gd_del">Remove this RSVP</button><button class="pill out" id="gd_x">Cancel</button></div>`,s=>{
   $('#gd_x').onclick=closeSheet;$('#gd_ed2').onclick=()=>{closeSheet();go('gedit/'+encodeURIComponent(r.id))};$('#gd_del').onclick=()=>{const rm=roomOf(r);if(!confirm('Remove the RSVP from '+r.n+'?'+(rm?' Room '+rm+' will be set free.':'')))return;
-   if(rm){Object.assign(D[rm],{name:'',pax:'',g:'',note:'',rid:''});putRoom(rm)}r.del=1;putR(r);closeSheet();go('guests');toast('RSVP removed')}});
+   if(rm){Object.assign(D[rm],{name:'',pax:'',pn:'',g:'',note:'',rid:''});putRoom(rm)}r.del=1;putR(r);closeSheet();go('guests');toast('RSVP removed')}});
  $('#gd_edit').onclick=()=>go('gedit/'+encodeURIComponent(r.id));
  if(!r.a)return;
  $('#gd_room').onclick=()=>roomPicker(r);
@@ -688,7 +689,7 @@ function stopAll(){subs.splice(0).forEach(u=>u());D={};R={};CT={};TK={};VH={};OR
 function listen(coll, fn, meta = false){subs.push(onSnapshot(collection(db,coll),{includeMetadataChanges:meta},s=>{const m={};s.forEach(d=>m[d.id]={...d.data(),id:d.id});fn(m,s.metadata);SEEN[coll]=1;rer()},e=>{console.warn(coll,e.code);if(e.code=='permission-denied')gate('notorg')}))}
 let dT = 0;
 function startData(){
- listen('rooms',m=>{D={};Object.entries(m).forEach(([id,r])=>D[id]={f:+r.f||+id[0],name:r.name||'',pax:r.pax||'',g:r.g||'',note:r.note||'',rid:r.rid||''})});
+ listen('rooms',m=>{D={};Object.entries(m).forEach(([id,r])=>D[id]={f:+r.f||+id[0],name:r.name||'',pax:r.pax||'',pn:r.pn||'',g:r.g||'',note:r.note||'',rid:r.rid||''})});
  listen('rsvps',(m,md)=>{R=m;LIVE=!md.fromCache;clearTimeout(dT);dT=setTimeout(()=>{if(SEEN.rooms&&SEEN.vehicles)dedupe()},1500)},true);
  listen('contacts',m=>CT=m);listen('tasks',m=>TK=m);listen('vehicles',m=>VH=m);listen('organisers',m=>ORG=m);
  listen('meta',m=>{META={invite:m.invite||null,seed:m.seed||null}})}
